@@ -7,90 +7,50 @@ namespace Lab1.AsyncClient;
 public sealed class RequestClient : IRequestClient, ILibraryOperationHandler
 {
     private readonly ILibraryOperationService _service;
-    private readonly ConcurrentDictionary<Guid, Pending> _pending = new ConcurrentDictionary<Guid, Pending>();
-
-    private sealed class Pending
-    {
-        public TaskCompletionSource<ResponseModel> Tcs { get; }
-
-        public CancellationTokenRegistration Registration { get; set; }
-
-        public Pending(TaskCompletionSource<ResponseModel> tcs)
-        {
-            Tcs = tcs;
-            Registration = default;
-        }
-
-        public void DisposeRegistration()
-        {
-            Registration.Dispose();
-        }
-    }
+    private readonly ConcurrentDictionary<Guid, TaskCompletionSource<ResponseModel>> _pending = new ConcurrentDictionary<Guid, TaskCompletionSource<ResponseModel>>();
 
     public RequestClient(ILibraryOperationService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    public Task<ResponseModel> SendAsync(RequestModel request, CancellationToken cancellationToken)
+    public async Task<ResponseModel> SendAsync(RequestModel request, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
-            return Task.FromCanceled<ResponseModel>(cancellationToken);
+            return await Task.FromCanceled<ResponseModel>(cancellationToken);
 
         var requestId = Guid.NewGuid();
 
         var tcs = new TaskCompletionSource<ResponseModel>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var pending = new Pending(tcs);
+        _pending[requestId] = tcs;
 
-        _pending[requestId] = pending;
-
-        pending.Registration = cancellationToken.Register(() =>
+        await using CancellationTokenRegistration registration = cancellationToken.Register(() =>
         {
-            if (_pending.TryRemove(requestId, out Pending? removed))
+            if (_pending.TryRemove(requestId, out TaskCompletionSource<ResponseModel>? removed))
             {
-                removed.Tcs.TrySetCanceled(cancellationToken);
-                removed.DisposeRegistration();
-            }
-            else
-            {
-                tcs.TrySetCanceled(cancellationToken);
+                removed.TrySetCanceled(cancellationToken);
             }
         });
 
         _service.BeginOperation(requestId, request, cancellationToken);
 
-        return tcs.Task;
+        return await tcs.Task.ConfigureAwait(false);
     }
 
     public void HandleOperationResult(Guid requestId, byte[] data)
     {
-        if (_pending.TryRemove(requestId, out Pending? pending))
+        if (_pending.TryRemove(requestId, out TaskCompletionSource<ResponseModel>? tcs))
         {
-            try
-            {
-                var response = new ResponseModel(data);
-                pending.Tcs.TrySetResult(response);
-            }
-            finally
-            {
-                pending.DisposeRegistration();
-            }
+            tcs.TrySetResult(new ResponseModel(data));
         }
     }
 
     public void HandleOperationError(Guid requestId, Exception exception)
     {
-        if (_pending.TryRemove(requestId, out Pending? pending))
+        if (_pending.TryRemove(requestId, out TaskCompletionSource<ResponseModel>? tcs))
         {
-            try
-            {
-                pending.Tcs.TrySetException(exception);
-            }
-            finally
-            {
-                pending.DisposeRegistration();
-            }
+            tcs.TrySetException(exception);
         }
     }
 }
