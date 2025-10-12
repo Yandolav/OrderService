@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+using System.Text.Json;
 using Task1.Domain;
 
 namespace Task1.Http;
@@ -27,7 +27,9 @@ public class HttpConfigClient : IConfigClient
         do
         {
             string url = $"/configurations?pageSize={pageSize}" + (token is null ? string.Empty : $"&pageToken={Uri.EscapeDataString(token)}");
-            QueryConfigurationsResponse? page = await client.GetFromJsonAsync<QueryConfigurationsResponse>(url, ct);
+            string json = await client.GetStringAsync(url, ct);
+            QueryConfigurationsResponse? page = JsonSerializer.Deserialize<QueryConfigurationsResponse>(json);
+
             if (page?.Items is { Count: > 0 }) all.AddRange(page.Items);
             token = page?.PageToken;
         }
