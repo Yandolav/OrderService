@@ -3,6 +3,8 @@
   <Folder Name="/src/" />
   <Folder Name="/src/lab-1/" />
   <Folder Name="/src/lab-2/">
+    <Project Path="src\DeleteIt\DeleteIt.csproj" Type="Classic C#" />
+    <Project Path="src\Task1\Task1.csproj" Type="Classic C#" />
     <File Path="src\lab-2\docker-compose.yaml" />
   </Folder>
   <Folder Name="/src/lab-3/" />
