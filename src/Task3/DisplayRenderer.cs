@@ -1,29 +1,33 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
 namespace Task3;
 
-public class DisplayRenderer
+public class DisplayRenderer : IDisplayRenderer
 {
     private readonly IOptionsMonitor<DisplayOptions> _options;
     private readonly IHttpClientFactory _http;
+    private readonly ILogger<DisplayRenderer> _logger;
 
-    public DisplayRenderer(IOptionsMonitor<DisplayOptions> options, IHttpClientFactory http)
+    public DisplayRenderer(IOptionsMonitor<DisplayOptions> options, IHttpClientFactory http, ILogger<DisplayRenderer> logger)
     {
         _options = options;
         _http = http;
+        _logger = logger;
     }
 
     public async Task RunAsync(CancellationToken ct)
     {
         await RenderOnceAsync(ct);
-        _options.OnChange((opts) => { _ = Task.Run(() => RenderOnceAsync(ct), ct); });
+        _options.OnChange(async void (opts) => { await RenderOnceAsync(ct); });
         try
         {
             await Task.Delay(Timeout.Infinite, ct);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            _logger.LogError(ex, ex.Message);
         }
     }
 

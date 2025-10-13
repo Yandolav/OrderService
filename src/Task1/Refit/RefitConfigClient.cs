@@ -21,7 +21,11 @@ public class RefitConfigClient : IConfigClient
         do
         {
             QueryConfigurationsResponse page = await _api.GetAsync(pageSize, token, ct);
-            if (page.Items.Count > 0) all.AddRange(page.Items);
+            if (page.Items.Count > 0)
+            {
+                all.AddRange(page.Items);
+            }
+
             token = page.PageToken;
         }
         while (!string.IsNullOrEmpty(token));

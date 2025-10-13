@@ -8,8 +8,8 @@ public static class ServiceCollectionExtensionsHttp
 {
     public static IServiceCollection AddConfigClientHttp(this IServiceCollection services, Uri baseUri)
     {
-        services.AddHttpClient();
-        services.AddTransient<IConfigClient>(sp => new HttpConfigClient(sp.GetRequiredService<IHttpClientFactory>(), baseUri));
+        services.AddHttpClient(ConfigClientDefaults.HttpClientName, c => c.BaseAddress = baseUri);
+        services.AddTransient<IConfigClient, HttpConfigClient>();
         return services;
     }
 }

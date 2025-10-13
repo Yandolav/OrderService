@@ -2,10 +2,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace Task2.Provider;
 
-public class ExternalConfigurationSource : IConfigurationSource
+public sealed class ExternalConfigurationSource : IConfigurationSource
 {
-    public IConfigurationProvider Build(IConfigurationBuilder builder)
+    private readonly ExternalConfigurationProvider _provider;
+
+    public ExternalConfigurationSource(ExternalConfigurationProvider provider)
     {
-        return new ExternalConfigurationProvider();
+        _provider = provider;
     }
+
+    public IConfigurationProvider Build(IConfigurationBuilder builder) => _provider;
 }
