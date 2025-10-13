@@ -6,6 +6,7 @@ using Task1.DI;
 using Task2.Provider;
 using Task2.Service;
 using Task3;
+using Task3.Options;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
