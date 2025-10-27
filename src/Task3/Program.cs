@@ -20,7 +20,9 @@ var manager = new ConfigurationManager();
 IConfigurationBuilder builder = manager;
 
 var externalProvider = new ExternalConfigurationProvider();
-builder.Add(new ExternalConfigurationSource(externalProvider));
+builder
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Add(new ExternalConfigurationSource(externalProvider));
 
 var services = new ServiceCollection();
 services.AddLogging(b =>
@@ -32,12 +34,7 @@ services.Configure<DisplayOptions>(manager.GetSection("Display"));
 services.Configure<ConfigClientOptions>(manager.GetSection("ConfigClient"));
 services.Configure<ConfigRefreshOptions>(manager.GetSection("ConfigRefresh"));
 services.AddSingleton(externalProvider);
-ConfigClientOptions clientOptsForRegistration = manager.GetSection("ConfigClient").Get<ConfigClientOptions>() ?? new ConfigClientOptions();
-
-if (string.Equals(clientOptsForRegistration.Implementation, "Refit", StringComparison.OrdinalIgnoreCase))
-    services.AddConfigClientRefit();
-else
-    services.AddConfigClientHttp();
+services.AddConfigClientRefit();
 services.AddSingleton<IConfigRefreshService, ConfigRefreshService>();
 services.AddSingleton<IDisplayRenderer, DisplayRenderer>();
 

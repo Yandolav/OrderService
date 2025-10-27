@@ -2,5 +2,5 @@ namespace Task2;
 
 public class ConfigRefreshOptions
 {
-    public int IntervalSeconds { get; set; } = 3;
+    public int IntervalSeconds { get; set; }
 }

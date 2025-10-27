@@ -11,8 +11,12 @@ public static class ServiceCollectionExtensionsHttp
     {
         services.AddHttpClient<IConfigClient, HttpConfigClient>((provider, client) =>
         {
-            IOptionsMonitor<ConfigClientOptions> options = provider.GetRequiredService<IOptionsMonitor<ConfigClientOptions>>();
-            client.BaseAddress = new Uri(options.CurrentValue.BaseAddress);
+            IOptions<ConfigClientOptions> options = provider.GetRequiredService<IOptions<ConfigClientOptions>>();
+            string? baseAddress = options.Value.BaseAddress;
+
+            if (string.IsNullOrWhiteSpace(baseAddress)) throw new InvalidOperationException("BaseAddress is not configured in ConfigClientOptions.");
+
+            client.BaseAddress = new Uri(baseAddress);
         });
 
         return services;

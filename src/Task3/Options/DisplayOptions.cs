@@ -2,7 +2,7 @@ namespace Task3.Options;
 
 public class DisplayOptions
 {
-    public DisplayMode Mode { get; set; } = DisplayMode.Figlet;
+    public DisplayMode Mode { get; set; }
 
     public string? Text { get; set; }
 
