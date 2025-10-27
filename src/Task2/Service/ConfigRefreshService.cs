@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Task1.Domain;
 using Task2.Provider;
 
@@ -7,31 +8,35 @@ public sealed class ConfigRefreshService : IConfigRefreshService
 {
     private readonly IConfigClient _client;
     private readonly ExternalConfigurationProvider _provider;
+    private readonly IOptionsMonitor<ConfigRefreshOptions> _options;
 
-    public ConfigRefreshService(IConfigClient client, ExternalConfigurationProvider provider)
+    public ConfigRefreshService(IConfigClient client, ExternalConfigurationProvider provider, IOptionsMonitor<ConfigRefreshOptions> options)
     {
         _client = client;
         _provider = provider;
+        _options = options;
     }
 
-    public async Task<bool> RefreshOnceAsync(int pageSize, CancellationToken ct = default)
+    public async Task<bool> RefreshOnceAsync(CancellationToken cancellationToken)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
+        var items = new List<ConfigurationItem>();
+        await foreach (ConfigurationItem item in _client.GetAllAsync(cancellationToken))
+        {
+            items.Add(item);
+        }
 
-        IReadOnlyList<ConfigurationItem> items = await _client.GetAllAsync(pageSize, ct);
         return _provider.TryApplyItems(items);
     }
 
-    public async Task RunPeriodicRefreshAsync(TimeSpan interval, int pageSize, CancellationToken ct = default)
+    public async Task RunPeriodicRefreshAsync(CancellationToken cancellationToken)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(interval, TimeSpan.Zero);
+        int intervalSeconds = _options.CurrentValue.IntervalSeconds;
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(intervalSeconds));
 
-        using var timer = new PeriodicTimer(interval);
-
-        await RefreshOnceAsync(pageSize, ct);
-        while (await timer.WaitForNextTickAsync(ct))
+        await RefreshOnceAsync(cancellationToken);
+        while (await timer.WaitForNextTickAsync(cancellationToken))
         {
-            await RefreshOnceAsync(pageSize, ct);
+            await RefreshOnceAsync(cancellationToken);
         }
     }
 }

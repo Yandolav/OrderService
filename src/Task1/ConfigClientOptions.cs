@@ -1,4 +1,4 @@
-namespace Task3.Options;
+namespace Task1;
 
 public class ConfigClientOptions
 {

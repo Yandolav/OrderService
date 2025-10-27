@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
 using Task1.Domain;
 
 namespace Task1.Refit;
@@ -6,30 +8,29 @@ public class RefitConfigClient : IConfigClient
 {
     private readonly IConfigurationsApi _api;
 
-    public RefitConfigClient(IConfigurationsApi api)
+    private readonly IOptionsMonitor<ConfigClientOptions> _options;
+
+    public RefitConfigClient(IConfigurationsApi api, IOptionsMonitor<ConfigClientOptions> options)
     {
         _api = api;
+        _options = options;
     }
 
-    public async Task<IReadOnlyList<ConfigurationItem>> GetAllAsync(int pageSize, CancellationToken ct = default)
+    public async IAsyncEnumerable<ConfigurationItem> GetAllAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
-
-        var all = new List<ConfigurationItem>();
         string? token = null;
 
         do
         {
-            QueryConfigurationsResponse page = await _api.GetAsync(pageSize, token, ct);
+            QueryConfigurationsResponse page = await _api.GetAsync(_options.CurrentValue.PageSize, token, cancellationToken);
             if (page.Items.Count > 0)
             {
-                all.AddRange(page.Items);
+                foreach (ConfigurationItemDto itemDto in page.Items)
+                    yield return new ConfigurationItem(itemDto.Key, itemDto.Value);
             }
 
             token = page.PageToken;
         }
         while (!string.IsNullOrEmpty(token));
-
-        return all;
     }
 }
