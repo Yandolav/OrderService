@@ -5,7 +5,9 @@
     <File Path=".editorconfig" />
   </Folder>
   <Folder Name="/src/" />
-  <Folder Name="/src/lab-1/" />
+  <Folder Name="/src/lab-1/">
+    <Project Path="src\Lab1\Lab1.csproj" Type="Classic C#" />
+  </Folder>
   <Folder Name="/src/lab-2/">
     <Project Path="src\Task1\Task1.csproj" Type="Classic C#" />
     <Project Path="src\Task2\Task2.csproj" Type="Classic C#" />
