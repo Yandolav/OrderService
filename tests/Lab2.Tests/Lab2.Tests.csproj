@@ -11,4 +11,8 @@
         <PackageReference Include="xunit.runner.visualstudio"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Task2\Task2.csproj" />
+    </ItemGroup>
+
 </Project>
