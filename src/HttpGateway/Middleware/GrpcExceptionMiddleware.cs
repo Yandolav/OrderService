@@ -3,7 +3,7 @@ using HttpGateway.Models;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 
-namespace Task3.HttpGateway.Middleware;
+namespace HttpGateway.Middleware;
 
 public sealed class GrpcExceptionMiddleware : IMiddleware
 {

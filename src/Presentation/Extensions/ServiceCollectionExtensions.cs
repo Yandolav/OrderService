@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Presentation.Grpc.Interceptors;
+using Presentation.Grpc;
 
-namespace Presentation;
+namespace Presentation.Extensions;
 
 public static class ServiceCollectionExtensions
 {

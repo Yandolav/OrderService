@@ -1,13 +1,13 @@
-using Application.Errors;
-using Application.ServiceInterfaces;
-using Domain.Entities;
-using Domain.Entities.Filters;
-using Domain.Entities.Pagination;
-using Domain.Entities.Payloads;
-using Domain.Enums;
-using Domain.Repositories;
+using Core.Application.Errors;
+using Core.Application.Filters;
+using Core.Application.Pagination;
+using Core.Application.Ports.PrimaryPorts;
+using Core.Application.Ports.SecondaryPorts;
+using Core.Domain.Entities;
+using Core.Domain.Enums;
+using Core.Domain.Payloads;
 
-namespace Application.Services;
+namespace Core.Application.Services;
 
 public sealed class OrdersService : IOrdersService
 {

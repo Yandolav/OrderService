@@ -1,5 +1,5 @@
-using Domain.Enums;
+using Core.Domain.Enums;
 
-namespace Domain.Entities;
+namespace Core.Domain.Entities;
 
 public sealed record Order(long OrderId, OrderState OrderState, DateTimeOffset OrderCreatedAt, string OrderCreatedBy);

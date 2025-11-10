@@ -1,4 +1,4 @@
-namespace Task3.HttpGateway.Options;
+namespace HttpGateway.Options;
 
 public sealed class GrpcClientOptions
 {

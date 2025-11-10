@@ -1,4 +1,4 @@
-namespace Domain.Enums;
+namespace Core.Domain.Enums;
 
 public enum OrderHistoryItemKind
 {

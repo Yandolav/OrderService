@@ -1,8 +1,8 @@
-using Domain.Entities;
-using Domain.Entities.Pagination;
-using Domain.Enums;
+using Core.Application.Pagination;
+using Core.Domain.Entities;
+using Core.Domain.Enums;
 
-namespace Application.ServiceInterfaces;
+namespace Core.Application.Ports.PrimaryPorts;
 
 public interface IOrdersService
 {

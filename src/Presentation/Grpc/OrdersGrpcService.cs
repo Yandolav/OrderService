@@ -1,8 +1,7 @@
-using Application.ServiceInterfaces;
-using Domain.Entities;
-using Domain.Entities.Pagination;
+using Core.Application.Pagination;
+using Core.Application.Ports.PrimaryPorts;
+using Core.Domain.Entities;
 using Grpc.Core;
-using Presentation.Grpc.Mappings;
 
 namespace Presentation.Grpc;
 
@@ -53,13 +52,13 @@ public sealed class OrdersGrpcService : OrderService.OrderServiceBase
 
     public override async Task<GetOrderHistoryResponse> GetOrderHistory(GetOrderHistoryRequest request, ServerCallContext context)
     {
-        Domain.Enums.OrderHistoryItemKind? kind = request.Kind switch
+        Core.Domain.Enums.OrderHistoryItemKind? kind = request.Kind switch
         {
             OrderHistoryItemKind.Unspecified => null,
-            OrderHistoryItemKind.CreatedItem => Domain.Enums.OrderHistoryItemKind.Created,
-            OrderHistoryItemKind.ItemAdded => Domain.Enums.OrderHistoryItemKind.ItemAdded,
-            OrderHistoryItemKind.ItemRemoved => Domain.Enums.OrderHistoryItemKind.ItemRemoved,
-            OrderHistoryItemKind.StateChanged => Domain.Enums.OrderHistoryItemKind.StateChanged,
+            OrderHistoryItemKind.CreatedItem => Core.Domain.Enums.OrderHistoryItemKind.Created,
+            OrderHistoryItemKind.ItemAdded => Core.Domain.Enums.OrderHistoryItemKind.ItemAdded,
+            OrderHistoryItemKind.ItemRemoved => Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved,
+            OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
             _ => null,
         };
 
@@ -74,13 +73,13 @@ public sealed class OrdersGrpcService : OrderService.OrderServiceBase
 
     public override async Task GetOrderHistoryStream(GetOrderHistoryRequest request, IServerStreamWriter<OrderHistoryItem> responseStream, ServerCallContext context)
     {
-        Domain.Enums.OrderHistoryItemKind? kind = request.Kind switch
+        Core.Domain.Enums.OrderHistoryItemKind? kind = request.Kind switch
         {
             OrderHistoryItemKind.Unspecified => null,
-            OrderHistoryItemKind.CreatedItem => Domain.Enums.OrderHistoryItemKind.Created,
-            OrderHistoryItemKind.ItemAdded => Domain.Enums.OrderHistoryItemKind.ItemAdded,
-            OrderHistoryItemKind.ItemRemoved => Domain.Enums.OrderHistoryItemKind.ItemRemoved,
-            OrderHistoryItemKind.StateChanged => Domain.Enums.OrderHistoryItemKind.StateChanged,
+            OrderHistoryItemKind.CreatedItem => Core.Domain.Enums.OrderHistoryItemKind.Created,
+            OrderHistoryItemKind.ItemAdded => Core.Domain.Enums.OrderHistoryItemKind.ItemAdded,
+            OrderHistoryItemKind.ItemRemoved => Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved,
+            OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
             _ => null,
         };
 

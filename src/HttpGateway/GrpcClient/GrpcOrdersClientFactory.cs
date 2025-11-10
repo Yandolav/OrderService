@@ -1,9 +1,9 @@
 using Grpc.Net.Client;
+using HttpGateway.Options;
 using Microsoft.Extensions.Options;
 using Presentation.Grpc;
-using Task3.HttpGateway.Options;
 
-namespace Task3.HttpGateway.GrpcClient;
+namespace HttpGateway.GrpcClient;
 
 internal sealed class GrpcOrdersClientFactory : IGrpcOrdersClientFactory
 {

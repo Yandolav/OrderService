@@ -1,8 +1,8 @@
-using Domain.Entities;
-using Domain.Entities.Filters;
-using Domain.Entities.Pagination;
+using Core.Application.Filters;
+using Core.Application.Pagination;
+using Core.Domain.Entities;
 
-namespace Domain.Repositories;
+namespace Core.Application.Ports.SecondaryPorts;
 
 public interface IProductsRepository
 {

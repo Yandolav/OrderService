@@ -1,10 +1,10 @@
+using HttpGateway.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
-using Task3.HttpGateway.Options;
 
-namespace Task3.HttpGateway.DI;
+namespace HttpGateway.DI;
 
 public static class WebHostExtensions
 {

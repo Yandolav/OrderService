@@ -1,7 +1,9 @@
+using HttpGateway.Models;
+using HttpGateway.Models.OrderHistory;
+using HttpGateway.Models.Payloads;
 using Presentation.Grpc;
-using Task3.HttpGateway.Models;
 
-namespace Task3.HttpGateway.Mappings;
+namespace HttpGateway.Mappings;
 
 public sealed class GrpcMapper
 {

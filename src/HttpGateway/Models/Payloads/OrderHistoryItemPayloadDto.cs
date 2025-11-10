@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Task3.HttpGateway.Models;
+namespace HttpGateway.Models.Payloads;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(OrderCreatedPayloadDto), typeDiscriminator: "order_created")]

@@ -1,10 +1,10 @@
-using Domain.Entities;
-using Domain.Entities.Filters;
-using Domain.Entities.Pagination;
-using Domain.Entities.Payloads;
-using Domain.Enums;
+using Core.Application.Filters;
+using Core.Application.Pagination;
+using Core.Domain.Entities;
+using Core.Domain.Enums;
+using Core.Domain.Payloads;
 
-namespace Domain.Repositories;
+namespace Core.Application.Ports.SecondaryPorts;
 
 public interface IOrderHistoryRepository
 {

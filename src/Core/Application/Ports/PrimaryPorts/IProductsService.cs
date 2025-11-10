@@ -1,4 +1,4 @@
-namespace Application.ServiceInterfaces;
+namespace Core.Application.Ports.PrimaryPorts;
 
 public interface IProductsService
 {

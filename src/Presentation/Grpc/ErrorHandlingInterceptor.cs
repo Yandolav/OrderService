@@ -1,9 +1,9 @@
-using Application.Errors;
+using Core.Application.Errors;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Microsoft.Extensions.Logging;
 
-namespace Presentation.Grpc.Interceptors;
+namespace Presentation.Grpc;
 
 public sealed class ErrorHandlingInterceptor : Interceptor
 {

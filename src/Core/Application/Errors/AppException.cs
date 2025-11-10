@@ -1,4 +1,4 @@
-namespace Application.Errors;
+namespace Core.Application.Errors;
 
 public abstract class AppException : Exception
 {

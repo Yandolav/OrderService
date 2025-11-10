@@ -1,5 +1,5 @@
-using Domain.Enums;
+using Core.Domain.Enums;
 
-namespace Domain.Entities.Payloads;
+namespace Core.Domain.Payloads;
 
 public sealed record StateChangedPayload(OrderState OldState, OrderState NewState) : IOrderHistoryPayload;

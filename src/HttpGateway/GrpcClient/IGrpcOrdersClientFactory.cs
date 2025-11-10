@@ -1,6 +1,6 @@
 using Presentation.Grpc;
 
-namespace Task3.HttpGateway.GrpcClient;
+namespace HttpGateway.GrpcClient;
 
 public interface IGrpcOrdersClientFactory
 {

@@ -1,4 +1,6 @@
-namespace Task3.HttpGateway.Models;
+using HttpGateway.Models.Payloads;
+
+namespace HttpGateway.Models.OrderHistory;
 
 public sealed class OrderHistoryItemDto
 {

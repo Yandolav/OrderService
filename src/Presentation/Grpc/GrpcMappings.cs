@@ -1,7 +1,7 @@
-using Domain.Entities;
+using Core.Domain.Entities;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Presentation.Grpc.Mappings;
+namespace Presentation.Grpc;
 
 internal static class GrpcMappings
 {
@@ -14,10 +14,10 @@ internal static class GrpcMappings
             CreatedAt = Timestamp.FromDateTimeOffset(orderHistoryItem.OrderHistoryItemCreatedAt),
             Kind = orderHistoryItem.OrderHistoryItemKind switch
             {
-                Domain.Enums.OrderHistoryItemKind.Created => OrderHistoryItemKind.CreatedItem,
-                Domain.Enums.OrderHistoryItemKind.ItemAdded => OrderHistoryItemKind.ItemAdded,
-                Domain.Enums.OrderHistoryItemKind.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
-                Domain.Enums.OrderHistoryItemKind.StateChanged => OrderHistoryItemKind.StateChanged,
+                Core.Domain.Enums.OrderHistoryItemKind.Created => OrderHistoryItemKind.CreatedItem,
+                Core.Domain.Enums.OrderHistoryItemKind.ItemAdded => OrderHistoryItemKind.ItemAdded,
+                Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
+                Core.Domain.Enums.OrderHistoryItemKind.StateChanged => OrderHistoryItemKind.StateChanged,
                 _ => OrderHistoryItemKind.Unspecified,
             },
         };
@@ -31,7 +31,7 @@ internal static class GrpcMappings
     {
         switch (orderHistoryItem.OrderHistoryItemPayload)
         {
-            case Domain.Entities.Payloads.ItemAddedPayload itemAddedPayload:
+            case Core.Domain.Payloads.ItemAddedPayload itemAddedPayload:
                 item.ItemAdded = new ItemAddedPayload
                 {
                     ProductId = itemAddedPayload.ProductId,
@@ -39,7 +39,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Domain.Entities.Payloads.ItemRemovedPayload itemRemovedPayload:
+            case Core.Domain.Payloads.ItemRemovedPayload itemRemovedPayload:
                 item.ItemRemoved = new ItemRemovedPayload
                 {
                     ProductId = itemRemovedPayload.ProductId,
@@ -47,14 +47,14 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Domain.Entities.Payloads.OrderCreatedPayload orderCreatedPayload:
+            case Core.Domain.Payloads.OrderCreatedPayload orderCreatedPayload:
                 item.OrderCreated = new OrderCreatedPayload
                 {
                     CreatedBy = orderCreatedPayload.CreatedBy,
                 };
                 break;
 
-            case Domain.Entities.Payloads.StateChangedPayload stateChangedPayload:
+            case Core.Domain.Payloads.StateChangedPayload stateChangedPayload:
                 item.StateChanged = new StateChangedPayload
                 {
                     OldState = MapState(stateChangedPayload.OldState),
@@ -67,14 +67,14 @@ internal static class GrpcMappings
         }
     }
 
-    private static OrderState MapState(Domain.Enums.OrderState state)
+    private static OrderState MapState(Core.Domain.Enums.OrderState state)
     {
         return state switch
         {
-            Domain.Enums.OrderState.Created => OrderState.Created,
-            Domain.Enums.OrderState.Processing => OrderState.Processing,
-            Domain.Enums.OrderState.Completed => OrderState.Completed,
-            Domain.Enums.OrderState.Cancelled => OrderState.Cancelled,
+            Core.Domain.Enums.OrderState.Created => OrderState.Created,
+            Core.Domain.Enums.OrderState.Processing => OrderState.Processing,
+            Core.Domain.Enums.OrderState.Completed => OrderState.Completed,
+            Core.Domain.Enums.OrderState.Cancelled => OrderState.Cancelled,
             _ => OrderState.Unspecified,
         };
     }

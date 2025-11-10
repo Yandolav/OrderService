@@ -1,7 +1,7 @@
 using FluentMigrator.Runner;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Persistence.Extensions;
 
 public static class ServiceProviderExtensions
 {

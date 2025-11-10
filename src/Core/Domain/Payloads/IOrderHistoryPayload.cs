@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Domain.Entities.Payloads;
+namespace Core.Domain.Payloads;
 
 [JsonDerivedType(typeof(OrderCreatedPayload), typeDiscriminator: nameof(OrderCreatedPayload))]
 [JsonDerivedType(typeof(ItemAddedPayload), typeDiscriminator: nameof(ItemAddedPayload))]

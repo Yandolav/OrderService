@@ -1,11 +1,13 @@
+using HttpGateway.GrpcClient;
+using HttpGateway.Mappings;
 using HttpGateway.Models;
+using HttpGateway.Models.AddOrderItem;
+using HttpGateway.Models.CreateOrder;
+using HttpGateway.Models.OrderHistory;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Grpc;
-using Task3.HttpGateway.GrpcClient;
-using Task3.HttpGateway.Mappings;
-using Task3.HttpGateway.Models;
 
-namespace Task3.HttpGateway.Controllers;
+namespace HttpGateway.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

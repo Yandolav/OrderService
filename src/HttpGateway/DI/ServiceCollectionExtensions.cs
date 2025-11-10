@@ -1,11 +1,11 @@
+using HttpGateway.GrpcClient;
+using HttpGateway.Mappings;
+using HttpGateway.Middleware;
+using HttpGateway.Swagger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Task3.HttpGateway.GrpcClient;
-using Task3.HttpGateway.Mappings;
-using Task3.HttpGateway.Middleware;
-using Task3.HttpGateway.Swagger;
 
-namespace Task3.HttpGateway.DI;
+namespace HttpGateway.DI;
 
 public static class ServiceCollectionExtensions
 {

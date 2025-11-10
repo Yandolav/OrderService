@@ -3,7 +3,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
-namespace Task3.HttpGateway.Swagger;
+namespace HttpGateway.Swagger;
 
 public sealed class PolymorphismSchemaFilter : ISchemaFilter
 {

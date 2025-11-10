@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Task3.HttpGateway.Models;
+namespace HttpGateway.Models.CreateOrder;
 
 public sealed class CreateOrderRequestDto
 {

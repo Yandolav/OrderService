@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using HttpGateway.DI;
+using HttpGateway.Middleware;
+using HttpGateway.Options;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Presentation.Hosting;
+using Presentation.BackgroundServices;
 using Task1;
 using Task1.DI;
 using Task1.Domain;
 using Task2;
 using Task2.Provider;
 using Task2.Service;
-using Task3.HttpGateway.DI;
-using Task3.HttpGateway.Middleware;
-using Task3.HttpGateway.Options;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IConfigurationBuilder configuration = builder.Configuration;

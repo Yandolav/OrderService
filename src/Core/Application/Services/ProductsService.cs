@@ -1,8 +1,8 @@
-using Application.Errors;
-using Application.ServiceInterfaces;
-using Domain.Repositories;
+using Core.Application.Errors;
+using Core.Application.Ports.PrimaryPorts;
+using Core.Application.Ports.SecondaryPorts;
 
-namespace Application.Services;
+namespace Core.Application.Services;
 
 public sealed class ProductsService : IProductsService
 {

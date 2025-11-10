@@ -1,7 +1,7 @@
-using Application.ServiceInterfaces;
-using Application.Services;
-using Domain.Enums;
-using Domain.Repositories;
+using Core.Application.Ports.PrimaryPorts;
+using Core.Application.Ports.SecondaryPorts;
+using Core.Application.Services;
+using Core.Domain.Enums;
 using FluentMigrator.Runner;
 using Infrastructure.Persistence.Migrations;
 using Infrastructure.Persistence.Repositories;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Persistence.Extensions;
 
 public static class ServiceCollectionExtensions
 {

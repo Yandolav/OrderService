@@ -1,4 +1,4 @@
-using Domain.Repositories;
+using Core.Application.Ports.SecondaryPorts;
 using Npgsql;
 
 namespace Infrastructure.Persistence;

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Task2.Service;
 
-namespace Task3.HttpGateway.Hosting;
+namespace HttpGateway.Hosting;
 
 public sealed class ConfigRefreshBackgroundService : BackgroundService
 {

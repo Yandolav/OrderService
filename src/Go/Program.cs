@@ -1,7 +1,8 @@
-﻿using Application.ServiceInterfaces;
-using Domain.Entities;
-using Domain.Entities.Pagination;
+﻿using Core.Application.Pagination;
+using Core.Application.Ports.PrimaryPorts;
+using Core.Domain.Entities;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;

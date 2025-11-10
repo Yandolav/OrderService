@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Presentation.Options;
 
-namespace Presentation;
+namespace Presentation.Extensions;
 
 public static class WebHostExtensions
 {

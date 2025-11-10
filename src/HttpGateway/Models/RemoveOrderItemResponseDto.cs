@@ -1,4 +1,4 @@
-namespace Task3.HttpGateway.Models;
+namespace HttpGateway.Models;
 
 public sealed class RemoveOrderItemResponseDto
 {

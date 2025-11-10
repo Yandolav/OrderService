@@ -1,4 +1,4 @@
-namespace Application.Errors;
+namespace Core.Application.Errors;
 
 public static class ErrorCodes
 {

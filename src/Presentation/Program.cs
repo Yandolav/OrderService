@@ -1,10 +1,11 @@
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Presentation;
+using Presentation.BackgroundServices;
+using Presentation.Extensions;
 using Presentation.Grpc;
-using Presentation.Hosting;
 using Presentation.Options;
 using Task1;
 using Task1.DI;

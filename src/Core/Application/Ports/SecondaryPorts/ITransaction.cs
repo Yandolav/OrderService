@@ -1,4 +1,4 @@
-namespace Domain.Repositories;
+namespace Core.Application.Ports.SecondaryPorts;
 
 public interface ITransaction : IAsyncDisposable
 {
