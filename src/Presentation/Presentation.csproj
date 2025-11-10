@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Protobuf ProtoRoot="protos" Include="protos\orders.proto" GrpcServices="Both" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="Grpc.Tools" />
+        <PackageReference Include="Google.Protobuf" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.csproj" />
+      <ProjectReference Include="..\Infrastructure \Infrastructure.csproj" />
+      <ProjectReference Include="..\Task2\Task2.csproj" />
+    </ItemGroup>
+</Project>

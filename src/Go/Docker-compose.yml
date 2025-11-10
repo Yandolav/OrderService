@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  lab3-store-db:
+    image: postgres:16-alpine
+    container_name: lab3-store-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${STORE_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${STORE_DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${STORE_DB_NAME:-lab3_store}
+    ports:
+      - "5434:5432"
+    volumes:
+      - lab3_store_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  lab3_store_pgdata:

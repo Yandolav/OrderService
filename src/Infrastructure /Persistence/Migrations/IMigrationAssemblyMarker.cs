@@ -1,0 +1,3 @@
+namespace Infrastructure.Persistence.Migrations;
+
+public interface IMigrationAssemblyMarker;

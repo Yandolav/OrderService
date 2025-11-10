@@ -14,10 +14,16 @@
     <Project Path="src\Task3\Task3.csproj" Type="Classic C#" />
     <File Path="src\lab-2\docker-compose.yaml" />
   </Folder>
-  <Folder Name="/src/lab-3/" />
+  <Folder Name="/src/lab-3/">
+    <Project Path="src\Core\Core.csproj" Type="Classic C#" />
+    <Project Path="src\HttpGateway\HttpGateway.csproj" Type="Classic C#" />
+    <Project Path="src\Infrastructure \Infrastructure.csproj" Type="Classic C#" />
+    <Project Path="src\Presentation\Presentation.csproj" Type="Classic C#" />
+  </Folder>
   <Folder Name="/src/lab-4/" />
   <Folder Name="/src/lab-5/" />
   <Folder Name="/tests/">
+    <Project Path="src\Go\Go.csproj" Type="Classic C#" />
     <Project Path="tests\Lab1.Tests\Lab1.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Lab2.Tests\Lab2.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Lab3.Tests\Lab3.Tests.csproj" Type="Classic C#" />

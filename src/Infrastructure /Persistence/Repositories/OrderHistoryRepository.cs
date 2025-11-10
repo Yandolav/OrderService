@@ -1,0 +1,80 @@
+using Domain.Entities;
+using Domain.Entities.Filters;
+using Domain.Entities.Pagination;
+using Domain.Entities.Payloads;
+using Domain.Enums;
+using Domain.Repositories;
+using Npgsql;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+
+namespace Infrastructure.Persistence.Repositories;
+
+public sealed class OrderHistoryRepository : IOrderHistoryRepository
+{
+    private readonly NpgsqlDataSource _dataSource;
+
+    public OrderHistoryRepository(NpgsqlDataSource dataSource)
+    {
+        _dataSource = dataSource;
+    }
+
+    public async Task<long> CreateAsync(long orderId, DateTimeOffset createdAt, OrderHistoryItemKind kind, IOrderHistoryPayload payload, ITransaction? transaction, CancellationToken cancellationToken)
+    {
+        const string sql = """
+                           insert into order_history(order_id, order_history_item_created_at, order_history_item_kind, order_history_item_payload)
+                           values (:oid, :at, :kind, :payload::jsonb)
+                           returning order_history_item_id;
+                           """;
+
+        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        command.Parameters.Add(new NpgsqlParameter("oid", orderId));
+        command.Parameters.Add(new NpgsqlParameter("at", createdAt));
+        command.Parameters.Add(new NpgsqlParameter("kind", kind));
+        string json = JsonSerializer.Serialize(payload);
+        command.Parameters.Add(new NpgsqlParameter("payload", json));
+
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            return reader.GetInt64(0);
+        }
+
+        throw new InvalidOperationException("no rows returned.");
+    }
+
+    public async IAsyncEnumerable<OrderHistory> SearchAsync(OrderHistoryFilter filter, Paging paging, ITransaction? transaction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        const string sql = """
+                           select order_history_item_id, order_id, order_history_item_created_at, order_history_item_kind, order_history_item_payload
+                           from order_history
+                           where 
+                               (order_history_item_id > :cursor)
+                             and (COALESCE(cardinality(:oids), 0) = 0 or order_id = any(:oids))
+                             and (:kind::order_history_item_kind is null or order_history_item_kind = :kind)
+                           order by order_history_item_id
+                           limit :lim;
+                           """;
+
+        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        command.Parameters.Add(new NpgsqlParameter("cursor", paging.Cursor));
+        command.Parameters.Add(new NpgsqlParameter("oids", filter.OrderIds));
+        object kindValue = filter.Kind.HasValue ? filter.Kind.Value : DBNull.Value;
+        command.Parameters.Add(new NpgsqlParameter("kind", kindValue));
+        command.Parameters.Add(new NpgsqlParameter("lim", paging.Limit));
+
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            string json = reader.GetString(4);
+            IOrderHistoryPayload payload = JsonSerializer.Deserialize<IOrderHistoryPayload>(json) ?? throw new InvalidOperationException();
+
+            yield return new OrderHistory(
+                reader.GetInt64(0),
+                reader.GetInt64(1),
+                reader.GetFieldValue<DateTimeOffset>(2),
+                reader.GetFieldValue<OrderHistoryItemKind>(3),
+                payload);
+        }
+    }
+}
