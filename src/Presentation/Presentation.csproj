@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Protobuf ProtoRoot="protos" Include="Protos/orders.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="Protos" Include="Protos/orders.proto" GrpcServices="Both" />
     </ItemGroup>
     
     <ItemGroup>
@@ -19,7 +19,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Core\Core.csproj" />
-      <ProjectReference Include="..\Infrastructure \Infrastructure.csproj" />
+      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
       <ProjectReference Include="..\Task2\Task2.csproj" />
     </ItemGroup>
 </Project>

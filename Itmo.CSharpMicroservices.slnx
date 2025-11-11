@@ -17,7 +17,7 @@
   <Folder Name="/src/lab-3/">
     <Project Path="src\Core\Core.csproj" Type="Classic C#" />
     <Project Path="src\HttpGateway\HttpGateway.csproj" Type="Classic C#" />
-    <Project Path="src\Infrastructure \Infrastructure.csproj" Type="Classic C#" />
+    <Project Path="src\Infrastructure\Infrastructure.csproj" Type="Classic C#" />
     <Project Path="src\Presentation\Presentation.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/src/lab-4/" />
