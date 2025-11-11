@@ -15,10 +15,10 @@ public sealed class ConfigRefreshBackgroundService : BackgroundService
         _logger = logger;
     }
 
-    public override Task StartAsync(CancellationToken cancellationToken)
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        _refresh.RefreshOnceAsync(cancellationToken);
-        return base.StartAsync(cancellationToken);
+        await _refresh.RefreshOnceAsync(cancellationToken);
+        await base.StartAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

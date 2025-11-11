@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Presentation.BackgroundServices;
 using Task1;
 using Task1.DI;
-using Task1.Domain;
 using Task2;
 using Task2.Provider;
 using Task2.Service;
@@ -16,14 +15,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IConfigurationBuilder configuration = builder.Configuration;
 
 var externalProvider = new ExternalConfigurationProvider();
-externalProvider.TryApplyItems(new[]
-{
-    new ConfigurationItem("ConfigClient:BaseAddress", "http://localhost:8080"),
-    new ConfigurationItem("ConfigClient:PageSize", "50"),
-    new ConfigurationItem("ConfigRefresh:IntervalSeconds", "1"),
-    new ConfigurationItem("HttpServer:Url", "http://0.0.0.0:8081"),
-    new ConfigurationItem("GrpcClient:Url", "http://localhost:8090"),
-});
+configuration.AddJsonFile("appsettings.json");
 configuration.Add(new ExternalConfigurationSource(externalProvider));
 
 builder.Services.Configure<ConfigClientOptions>(builder.Configuration.GetSection("ConfigClient"));
