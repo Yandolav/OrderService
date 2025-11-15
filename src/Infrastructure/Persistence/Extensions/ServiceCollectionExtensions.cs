@@ -40,7 +40,7 @@ public static class ServiceCollectionExtensions
             dataSourceBuilder.MapEnum<OrderState>(pgName: "order_state");
             return dataSourceBuilder.Build();
         });
-        services.AddScoped<ITransactionManager, PostgresTransactionManager>();
+        services.AddScoped<ITransactionManager, TransactionScopeTransactionManager>();
         return services;
     }
 

@@ -24,7 +24,8 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            where order_item_id = :id;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("id", orderItemId));
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -49,7 +50,8 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            returning order_item_id;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("oid", orderId));
         command.Parameters.Add(new NpgsqlParameter("pid", productId));
         command.Parameters.Add(new NpgsqlParameter("quantity", quantity));
@@ -70,7 +72,8 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            where order_item_id = :id;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("id", orderItemId));
 
         int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
@@ -91,7 +94,8 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            limit :lim;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("cursor", paging.Cursor));
         command.Parameters.Add(new NpgsqlParameter("oids", filter.OrderIds));
         command.Parameters.Add(new NpgsqlParameter("pids", filter.ProductIds));

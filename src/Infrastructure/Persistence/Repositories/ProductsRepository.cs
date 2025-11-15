@@ -24,7 +24,8 @@ public sealed class ProductsRepository : IProductsRepository
                            returning product_id;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("name", name));
         command.Parameters.Add(new NpgsqlParameter("price", price));
 
@@ -52,7 +53,8 @@ public sealed class ProductsRepository : IProductsRepository
                            limit :limit;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("ids", filter.Ids));
         command.Parameters.Add(new NpgsqlParameter("minimum_price", filter.MinPrice));
         command.Parameters.Add(new NpgsqlParameter("maximum_price", filter.MaxPrice));

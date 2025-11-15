@@ -27,7 +27,8 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
                            returning order_history_item_id;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("oid", orderId));
         command.Parameters.Add(new NpgsqlParameter("at", createdAt));
         command.Parameters.Add(new NpgsqlParameter("kind", kind));
@@ -56,7 +57,8 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
                            limit :lim;
                            """;
 
-        await using NpgsqlCommand command = transaction is PostgresTransaction postgresTransaction ? new NpgsqlCommand(sql, postgresTransaction.Connection, postgresTransaction.Transaction) : _dataSource.CreateCommand(sql);
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add(new NpgsqlParameter("cursor", paging.Cursor));
         command.Parameters.Add(new NpgsqlParameter("oids", filter.OrderIds));
         object kindValue = filter.Kind.HasValue ? filter.Kind.Value : DBNull.Value;
