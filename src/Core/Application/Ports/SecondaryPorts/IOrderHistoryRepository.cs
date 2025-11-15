@@ -8,7 +8,7 @@ namespace Core.Application.Ports.SecondaryPorts;
 
 public interface IOrderHistoryRepository
 {
-    Task<long> CreateAsync(long orderId, DateTimeOffset createdAt, OrderHistoryItemKind kind, IOrderHistoryPayload payload, ITransaction? transaction, CancellationToken cancellationToken);
+    Task<long> CreateAsync(long orderId, DateTimeOffset createdAt, OrderHistoryItemKind kind, IOrderHistoryPayload payload, CancellationToken cancellationToken);
 
-    IAsyncEnumerable<OrderHistory> SearchAsync(OrderHistoryFilter filter, Paging paging, ITransaction? transaction, CancellationToken cancellationToken);
+    IAsyncEnumerable<OrderHistory> SearchAsync(OrderHistoryFilter filter, Paging paging, CancellationToken cancellationToken);
 }

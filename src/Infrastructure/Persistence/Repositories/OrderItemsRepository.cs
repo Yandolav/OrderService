@@ -16,7 +16,7 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
         _dataSource = dataSource;
     }
 
-    public async Task<OrderItem?> GetByIdAsync(long orderItemId, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<OrderItem?> GetByIdAsync(long orderItemId, CancellationToken cancellationToken)
     {
         const string sql = """
                            select order_item_id, order_id, product_id, order_item_quantity, order_item_deleted
@@ -42,7 +42,7 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
         return null;
     }
 
-    public async Task<long> CreateAsync(long orderId, long productId, int quantity, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<long> CreateAsync(long orderId, long productId, int quantity, CancellationToken cancellationToken)
     {
         const string sql = """
                            insert into order_items(order_id, product_id, order_item_quantity, order_item_deleted)
@@ -65,7 +65,7 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
         throw new InvalidOperationException("no rows returned.");
     }
 
-    public async Task<bool> SoftDeleteAsync(long orderItemId, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(long orderItemId, CancellationToken cancellationToken)
     {
         const string sql = """
                            update order_items set order_item_deleted = true 
@@ -80,7 +80,7 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
         return rowsAffected == 1;
     }
 
-    public async IAsyncEnumerable<OrderItem> SearchAsync(OrderItemsFilter filter, Paging paging, ITransaction? transaction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<OrderItem> SearchAsync(OrderItemsFilter filter, Paging paging, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string sql = """
                            select order_item_id, order_id, product_id, order_item_quantity, order_item_deleted

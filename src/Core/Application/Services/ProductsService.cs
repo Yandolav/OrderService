@@ -20,6 +20,6 @@ public sealed class ProductsService : IProductsService
         if (string.IsNullOrWhiteSpace(name)) throw new InvalidArgumentAppException("name is required");
         if (price <= 0) throw new InvalidArgumentAppException("price must be > 0");
 
-        return await _productsRepository.CreateAsync(name, price, null, cancellationToken);
+        return await _productsRepository.CreateAsync(name, price, cancellationToken);
     }
 }

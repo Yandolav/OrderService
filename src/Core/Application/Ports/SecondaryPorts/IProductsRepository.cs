@@ -6,7 +6,7 @@ namespace Core.Application.Ports.SecondaryPorts;
 
 public interface IProductsRepository
 {
-    Task<long> CreateAsync(string name, decimal price, ITransaction? transaction, CancellationToken cancellationToken);
+    Task<long> CreateAsync(string name, decimal price, CancellationToken cancellationToken);
 
-    IAsyncEnumerable<Product> SearchAsync(ProductFilter filter, Paging paging, ITransaction? transaction, CancellationToken cancellationToken);
+    IAsyncEnumerable<Product> SearchAsync(ProductFilter filter, Paging paging, CancellationToken cancellationToken);
 }

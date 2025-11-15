@@ -35,8 +35,8 @@ public sealed class OrdersService : IOrdersService
 
         await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        long orderId = await _ordersRepository.CreateAsync(createdBy, now, transaction, cancellationToken);
-        await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.Created, new OrderCreatedPayload(createdBy), transaction, cancellationToken);
+        long orderId = await _ordersRepository.CreateAsync(createdBy, now, cancellationToken);
+        await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.Created, new OrderCreatedPayload(createdBy), cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return orderId;
     }
@@ -45,35 +45,35 @@ public sealed class OrdersService : IOrdersService
     {
         if (quantity <= 0) throw new InvalidArgumentAppException("quantity must be > 0");
 
-        Order order = await _ordersRepository.GetByIdAsync(orderId, null, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
+        Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
         if (order.OrderState != OrderState.Created)
         {
             throw new ForbiddenForStateAppException("add_items", order.OrderState.ToString());
         }
 
         await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
-        long itemId = await _ordersItemsRepository.CreateAsync(orderId, productId, quantity, transaction, cancellationToken);
+        long itemId = await _ordersItemsRepository.CreateAsync(orderId, productId, quantity, cancellationToken);
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.ItemAdded, new ItemAddedPayload(productId, quantity), transaction, cancellationToken);
+        await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.ItemAdded, new ItemAddedPayload(productId, quantity), cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return itemId;
     }
 
     public async Task<bool> RemoveOrderItemAsync(long orderItemId, CancellationToken cancellationToken)
     {
-        OrderItem item = await _ordersItemsRepository.GetByIdAsync(orderItemId, null, cancellationToken) ?? throw new NotFoundAppException("OrderItem", orderItemId);
-        Order order = await _ordersRepository.GetByIdAsync(item.OrderId, null, cancellationToken) ?? throw new NotFoundAppException("Order", item.OrderId);
+        OrderItem item = await _ordersItemsRepository.GetByIdAsync(orderItemId, cancellationToken) ?? throw new NotFoundAppException("OrderItem", orderItemId);
+        Order order = await _ordersRepository.GetByIdAsync(item.OrderId, cancellationToken) ?? throw new NotFoundAppException("Order", item.OrderId);
         if (order.OrderState != OrderState.Created)
         {
             throw new ForbiddenForStateAppException("remove_items", order.OrderState.ToString());
         }
 
         await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
-        bool deleted = await _ordersItemsRepository.SoftDeleteAsync(orderItemId, transaction, cancellationToken);
+        bool deleted = await _ordersItemsRepository.SoftDeleteAsync(orderItemId, cancellationToken);
         if (deleted)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
-            await _ordersHistoryRepository.CreateAsync(order.OrderId, now, OrderHistoryItemKind.ItemRemoved, new ItemRemovedPayload(item.ProductId, item.OrderItemQuantity), transaction, cancellationToken);
+            await _ordersHistoryRepository.CreateAsync(order.OrderId, now, OrderHistoryItemKind.ItemRemoved, new ItemRemovedPayload(item.ProductId, item.OrderItemQuantity), cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
 
@@ -97,21 +97,21 @@ public sealed class OrdersService : IOrdersService
 
     public IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[]? orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken)
     {
-        return _ordersHistoryRepository.SearchAsync(new OrderHistoryFilter(orderIds, kind), paging, null, cancellationToken);
+        return _ordersHistoryRepository.SearchAsync(new OrderHistoryFilter(orderIds, kind), paging, cancellationToken);
     }
 
     private async Task<bool> ChangeState(long orderId, OrderState newState, CancellationToken cancellationToken)
     {
-        Order order = await _ordersRepository.GetByIdAsync(orderId, null, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
+        Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
         if (order.OrderState == newState) throw new InvalidStateAppException("already in requested state", order.OrderState.ToString(), newState.ToString());
         if (order.OrderState is OrderState.Completed or OrderState.Cancelled) throw new InvalidStateAppException("state is terminal", order.OrderState.ToString(), newState.ToString());
 
         await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
-        bool updated = await _ordersRepository.UpdateStateAsync(orderId, newState, transaction, cancellationToken);
+        bool updated = await _ordersRepository.UpdateStateAsync(orderId, newState, cancellationToken);
         if (updated)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
-            await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.StateChanged, new StateChangedPayload(order.OrderState, newState), transaction, cancellationToken);
+            await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.StateChanged, new StateChangedPayload(order.OrderState, newState), cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
 

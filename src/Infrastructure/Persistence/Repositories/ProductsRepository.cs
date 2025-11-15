@@ -16,7 +16,7 @@ public sealed class ProductsRepository : IProductsRepository
         _dataSource = dataSource;
     }
 
-    public async Task<long> CreateAsync(string name, decimal price, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<long> CreateAsync(string name, decimal price, CancellationToken cancellationToken)
     {
         const string sql = """
                            insert into products(product_name, product_price)
@@ -38,7 +38,7 @@ public sealed class ProductsRepository : IProductsRepository
         throw new InvalidOperationException("no rows returned.");
     }
 
-    public async IAsyncEnumerable<Product> SearchAsync(ProductFilter filter, Paging paging, ITransaction? transaction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<Product> SearchAsync(ProductFilter filter, Paging paging, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string sql = """
                            select product_id, product_name, product_price

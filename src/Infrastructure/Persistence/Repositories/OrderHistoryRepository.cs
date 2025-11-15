@@ -19,7 +19,7 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
         _dataSource = dataSource;
     }
 
-    public async Task<long> CreateAsync(long orderId, DateTimeOffset createdAt, OrderHistoryItemKind kind, IOrderHistoryPayload payload, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<long> CreateAsync(long orderId, DateTimeOffset createdAt, OrderHistoryItemKind kind, IOrderHistoryPayload payload, CancellationToken cancellationToken)
     {
         const string sql = """
                            insert into order_history(order_id, order_history_item_created_at, order_history_item_kind, order_history_item_payload)
@@ -44,7 +44,7 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
         throw new InvalidOperationException("no rows returned.");
     }
 
-    public async IAsyncEnumerable<OrderHistory> SearchAsync(OrderHistoryFilter filter, Paging paging, ITransaction? transaction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<OrderHistory> SearchAsync(OrderHistoryFilter filter, Paging paging, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string sql = """
                            select order_history_item_id, order_id, order_history_item_created_at, order_history_item_kind, order_history_item_payload

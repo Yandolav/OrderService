@@ -17,7 +17,7 @@ public sealed class OrdersRepository : IOrdersRepository
         _dataSource = dataSource;
     }
 
-    public async Task<Order?> GetByIdAsync(long orderId, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<Order?> GetByIdAsync(long orderId, CancellationToken cancellationToken)
     {
         const string sql = """
                            select order_id, order_state, order_created_at, order_created_by
@@ -43,7 +43,7 @@ public sealed class OrdersRepository : IOrdersRepository
         return null;
     }
 
-    public async Task<long> CreateAsync(string createdBy, DateTimeOffset createdAt, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<long> CreateAsync(string createdBy, DateTimeOffset createdAt, CancellationToken cancellationToken)
     {
         const string sql = """
                            insert into orders(order_state, order_created_at, order_created_by)
@@ -64,7 +64,7 @@ public sealed class OrdersRepository : IOrdersRepository
         throw new InvalidOperationException("no rows returned.");
     }
 
-    public async Task<bool> UpdateStateAsync(long orderId, OrderState newState, ITransaction? transaction, CancellationToken cancellationToken)
+    public async Task<bool> UpdateStateAsync(long orderId, OrderState newState, CancellationToken cancellationToken)
     {
         const string sql = """
                            update orders set order_state = :state
@@ -80,7 +80,7 @@ public sealed class OrdersRepository : IOrdersRepository
         return rowsAffected == 1;
     }
 
-    public async IAsyncEnumerable<Order> SearchAsync(OrderFilter filter, Paging paging, ITransaction? transaction, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<Order> SearchAsync(OrderFilter filter, Paging paging, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string sql = """
                            select order_id, order_state, order_created_at, order_created_by

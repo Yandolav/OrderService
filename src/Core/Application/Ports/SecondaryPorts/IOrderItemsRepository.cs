@@ -6,11 +6,11 @@ namespace Core.Application.Ports.SecondaryPorts;
 
 public interface IOrderItemsRepository
 {
-    Task<OrderItem?> GetByIdAsync(long orderItemId, ITransaction? transaction, CancellationToken cancellationToken);
+    Task<OrderItem?> GetByIdAsync(long orderItemId, CancellationToken cancellationToken);
 
-    Task<long> CreateAsync(long orderId, long productId, int quantity, ITransaction? transaction, CancellationToken cancellationToken);
+    Task<long> CreateAsync(long orderId, long productId, int quantity, CancellationToken cancellationToken);
 
-    Task<bool> SoftDeleteAsync(long orderItemId, ITransaction? transaction, CancellationToken cancellationToken);
+    Task<bool> SoftDeleteAsync(long orderItemId, CancellationToken cancellationToken);
 
-    IAsyncEnumerable<OrderItem> SearchAsync(OrderItemsFilter filter, Paging paging, ITransaction? transaction, CancellationToken cancellationToken);
+    IAsyncEnumerable<OrderItem> SearchAsync(OrderItemsFilter filter, Paging paging, CancellationToken cancellationToken);
 }
