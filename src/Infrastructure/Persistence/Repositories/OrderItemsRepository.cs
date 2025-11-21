@@ -25,44 +25,46 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            """;
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("id", orderItemId));
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("id", orderItemId),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            return new OrderItem(
+        return await reader.ReadAsync(cancellationToken)
+            ? new OrderItem(
                 reader.GetInt64(0),
                 reader.GetInt64(1),
                 reader.GetInt64(2),
                 reader.GetInt32(3),
-                reader.GetBoolean(4));
-        }
-
-        return null;
+                reader.GetBoolean(4))
+            : null;
     }
 
     public async Task<long> CreateAsync(long orderId, long productId, int quantity, CancellationToken cancellationToken)
     {
         const string sql = """
                            insert into order_items(order_id, product_id, order_item_quantity, order_item_deleted)
-                           values (:oid, :pid, :quantity, false) 
+                           values (:order_id, :product_id, :quantity, false) 
                            returning order_item_id;
                            """;
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("oid", orderId));
-        command.Parameters.Add(new NpgsqlParameter("pid", productId));
-        command.Parameters.Add(new NpgsqlParameter("quantity", quantity));
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("order_id", orderId),
+                new NpgsqlParameter("product_id", productId),
+                new NpgsqlParameter("quantity", quantity),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            return reader.GetInt64(0);
-        }
-
-        throw new InvalidOperationException("no rows returned.");
+        return await reader.ReadAsync(cancellationToken) ? reader.GetInt64(0) : throw new InvalidOperationException("no rows returned.");
     }
 
     public async Task<bool> SoftDeleteAsync(long orderItemId, CancellationToken cancellationToken)
@@ -73,8 +75,13 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            """;
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("id", orderItemId));
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("id", orderItemId),
+            },
+        };
 
         int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
         return rowsAffected == 1;
@@ -87,20 +94,25 @@ public sealed class OrderItemsRepository : IOrderItemsRepository
                            from order_items
                            where
                                (order_item_id > :cursor)
-                             and (COALESCE(cardinality(:oids), 0) = 0 or order_id = any(:oids))
-                             and (COALESCE(cardinality(:pids), 0) = 0 or product_id = any(:pids))
-                             and (:del is null or order_item_deleted = :del)
+                             and (cardinality(:order_ids) = 0 or order_id = any(:order_ids))
+                             and (cardinality(:product_ids) = 0 or product_id = any(:product_ids))
+                             and (:deleted is null or order_item_deleted = :deleted)
                            order by order_item_id
-                           limit :lim;
+                           limit :limit;
                            """;
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("cursor", paging.Cursor));
-        command.Parameters.Add(new NpgsqlParameter("oids", filter.OrderIds));
-        command.Parameters.Add(new NpgsqlParameter("pids", filter.ProductIds));
-        command.Parameters.Add(new NpgsqlParameter("del", filter.Deleted));
-        command.Parameters.Add(new NpgsqlParameter("lim", paging.Limit));
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("cursor", paging.Cursor),
+                new NpgsqlParameter("order_ids", filter.OrderIds),
+                new NpgsqlParameter("product_ids", filter.ProductIds),
+                new NpgsqlParameter("deleted", filter.Deleted),
+                new NpgsqlParameter("limit", paging.Limit),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))

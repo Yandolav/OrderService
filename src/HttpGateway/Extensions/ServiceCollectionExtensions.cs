@@ -1,17 +1,19 @@
-using HttpGateway.GrpcClient;
 using HttpGateway.Mappings;
 using HttpGateway.Middleware;
+using HttpGateway.Options;
 using HttpGateway.Swagger;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Presentation.Grpc;
 
-namespace HttpGateway.DI;
+namespace HttpGateway.Extensions;
 
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddHttpGateway(this IServiceCollection services)
     {
-        services.AddControllers().AddJsonOptions(o => { o.JsonSerializerOptions.WriteIndented = false; });
+        services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
@@ -23,7 +25,12 @@ public static class ServiceCollectionExtensions
             c.SchemaFilter<PolymorphismSchemaFilter>();
         });
 
-        services.AddSingleton<IGrpcOrdersClientFactory, GrpcOrdersClientFactory>();
+        services.AddGrpcClient<OrderService.OrderServiceClient>((provider, options) =>
+        {
+            IOptions<GrpcClientOptions> grpcOptions = provider.GetRequiredService<IOptions<GrpcClientOptions>>();
+            if (string.IsNullOrWhiteSpace(grpcOptions.Value.Url)) throw new InvalidOperationException("GrpcClient:Url is not configured.");
+            options.Address = new Uri(grpcOptions.Value.Url);
+        });
         services.AddSingleton<GrpcMapper>();
         services.AddSingleton<GrpcExceptionMiddleware>();
 

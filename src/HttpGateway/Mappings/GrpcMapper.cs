@@ -80,4 +80,17 @@ public sealed class GrpcMapper
             MapHistoryKind(item.Kind),
             payload);
     }
+
+    public OrderHistoryItemKind MapHistoryKindToGrpc(OrderHistoryItemKindDto? kind)
+    {
+        return kind switch
+        {
+            OrderHistoryItemKindDto.Unspecified => OrderHistoryItemKind.Unspecified,
+            OrderHistoryItemKindDto.CreatedItem => OrderHistoryItemKind.CreatedItem,
+            OrderHistoryItemKindDto.ItemAdded => OrderHistoryItemKind.ItemAdded,
+            OrderHistoryItemKindDto.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
+            OrderHistoryItemKindDto.StateChanged => OrderHistoryItemKind.StateChanged,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+    }
 }

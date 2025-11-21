@@ -1,4 +1,4 @@
-﻿using HttpGateway.DI;
+﻿using HttpGateway.Extensions;
 using HttpGateway.Middleware;
 using HttpGateway.Options;
 using Microsoft.AspNetCore.Builder;

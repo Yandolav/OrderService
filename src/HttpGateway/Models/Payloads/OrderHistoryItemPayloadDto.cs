@@ -7,4 +7,4 @@ namespace HttpGateway.Models.Payloads;
 [JsonDerivedType(typeof(ItemAddedPayloadDto), typeDiscriminator: "item_added")]
 [JsonDerivedType(typeof(ItemRemovedPayloadDto), typeDiscriminator: "item_removed")]
 [JsonDerivedType(typeof(StateChangedPayloadDto), typeDiscriminator: "state_changed")]
-public abstract class OrderHistoryItemPayloadDto { }
+public abstract class OrderHistoryItemPayloadDto;

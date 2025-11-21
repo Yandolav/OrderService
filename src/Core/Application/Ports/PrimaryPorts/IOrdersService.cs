@@ -18,5 +18,5 @@ public interface IOrdersService
 
     Task<bool> CancelAsync(long orderId, CancellationToken cancellationToken);
 
-    IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[]? orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken);
+    IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[] orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken);
 }

@@ -23,25 +23,25 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
     {
         const string sql = """
                            insert into order_history(order_id, order_history_item_created_at, order_history_item_kind, order_history_item_payload)
-                           values (:oid, :at, :kind, :payload::jsonb)
+                           values (:order_id, :created_at, :kind, :payload::jsonb)
                            returning order_history_item_id;
                            """;
 
-        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("oid", orderId));
-        command.Parameters.Add(new NpgsqlParameter("at", createdAt));
-        command.Parameters.Add(new NpgsqlParameter("kind", kind));
         string json = JsonSerializer.Serialize(payload);
-        command.Parameters.Add(new NpgsqlParameter("payload", json));
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("order_id", orderId),
+                new NpgsqlParameter("created_at", createdAt),
+                new NpgsqlParameter("kind", kind),
+                new NpgsqlParameter("payload", json),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            return reader.GetInt64(0);
-        }
-
-        throw new InvalidOperationException("no rows returned.");
+        return await reader.ReadAsync(cancellationToken) ? reader.GetInt64(0) : throw new InvalidOperationException("no rows returned.");
     }
 
     public async IAsyncEnumerable<OrderHistory> SearchAsync(OrderHistoryFilter filter, Paging paging, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -51,19 +51,24 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
                            from order_history
                            where 
                                (order_history_item_id > :cursor)
-                             and (COALESCE(cardinality(:oids), 0) = 0 or order_id = any(:oids))
+                             and (cardinality(:order_ids) = 0 or order_id = any(:order_ids))
                              and (:kind::order_history_item_kind is null or order_history_item_kind = :kind)
                            order by order_history_item_id
-                           limit :lim;
+                           limit :limit;
                            """;
 
-        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("cursor", paging.Cursor));
-        command.Parameters.Add(new NpgsqlParameter("oids", filter.OrderIds));
         object kindValue = filter.Kind.HasValue ? filter.Kind.Value : DBNull.Value;
-        command.Parameters.Add(new NpgsqlParameter("kind", kindValue));
-        command.Parameters.Add(new NpgsqlParameter("lim", paging.Limit));
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("cursor", paging.Cursor),
+                new NpgsqlParameter("order_ids", filter.OrderIds),
+                new NpgsqlParameter("kind", kindValue),
+                new NpgsqlParameter("limit", paging.Limit),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
@@ -74,8 +79,8 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
             yield return new OrderHistory(
                 reader.GetInt64(0),
                 reader.GetInt64(1),
-                reader.GetFieldValue<DateTimeOffset>(2),
-                reader.GetFieldValue<OrderHistoryItemKind>(3),
+                await reader.GetFieldValueAsync<DateTimeOffset>(2, cancellationToken),
+                await reader.GetFieldValueAsync<OrderHistoryItemKind>(3, cancellationToken),
                 payload);
         }
     }

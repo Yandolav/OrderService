@@ -25,17 +25,17 @@ public sealed class ProductsRepository : IProductsRepository
                            """;
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("name", name));
-        command.Parameters.Add(new NpgsqlParameter("price", price));
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("name", name),
+                new NpgsqlParameter("price", price),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            return reader.GetInt64(0);
-        }
-
-        throw new InvalidOperationException("no rows returned.");
+        return await reader.ReadAsync(cancellationToken) ? reader.GetInt64(0) : throw new InvalidOperationException("no rows returned.");
     }
 
     public async IAsyncEnumerable<Product> SearchAsync(ProductFilter filter, Paging paging, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -45,7 +45,7 @@ public sealed class ProductsRepository : IProductsRepository
                            from products
                            where 
                                (product_id > :cursor)
-                             and (COALESCE(cardinality(:ids), 0) = 0 or product_id = any(:ids))
+                             and (cardinality(:product_ids) = 0 or product_id = any(:product_ids))
                              and (:minimum_price is null or product_price >= :minimum_price)
                              and (:maximum_price is null or product_price <= :maximum_price)
                              and (:name_pattern is null or product_name like :name_pattern)
@@ -54,13 +54,18 @@ public sealed class ProductsRepository : IProductsRepository
                            """;
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.Add(new NpgsqlParameter("ids", filter.Ids));
-        command.Parameters.Add(new NpgsqlParameter("minimum_price", filter.MinPrice));
-        command.Parameters.Add(new NpgsqlParameter("maximum_price", filter.MaxPrice));
-        command.Parameters.Add(new NpgsqlParameter("name_pattern", filter.NameContains));
-        command.Parameters.Add(new NpgsqlParameter("cursor", paging.Cursor));
-        command.Parameters.Add(new NpgsqlParameter("limit", paging.Limit));
+        await using var command = new NpgsqlCommand(sql, connection)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter("product_ids", filter.Ids),
+                new NpgsqlParameter("minimum_price", filter.MinPrice),
+                new NpgsqlParameter("maximum_price", filter.MaxPrice),
+                new NpgsqlParameter("name_pattern", filter.NameContains),
+                new NpgsqlParameter("cursor", paging.Cursor),
+                new NpgsqlParameter("limit", paging.Limit),
+            },
+        };
 
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))

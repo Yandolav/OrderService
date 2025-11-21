@@ -95,7 +95,7 @@ public sealed class OrdersService : IOrdersService
         return await ChangeState(orderId, OrderState.Cancelled, cancellationToken);
     }
 
-    public IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[]? orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken)
+    public IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[] orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken)
     {
         return _ordersHistoryRepository.SearchAsync(new OrderHistoryFilter(orderIds, kind), paging, cancellationToken);
     }

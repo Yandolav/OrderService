@@ -52,18 +52,8 @@ public sealed class OrdersGrpcService : OrderService.OrderServiceBase
 
     public override async Task<GetOrderHistoryResponse> GetOrderHistory(GetOrderHistoryRequest request, ServerCallContext context)
     {
-        Core.Domain.Enums.OrderHistoryItemKind? kind = request.Kind switch
-        {
-            OrderHistoryItemKind.Unspecified => null,
-            OrderHistoryItemKind.CreatedItem => Core.Domain.Enums.OrderHistoryItemKind.Created,
-            OrderHistoryItemKind.ItemAdded => Core.Domain.Enums.OrderHistoryItemKind.ItemAdded,
-            OrderHistoryItemKind.ItemRemoved => Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved,
-            OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
-            _ => null,
-        };
-
         var response = new GetOrderHistoryResponse();
-        await foreach (OrderHistory item in _orders.GetOrderHistoryAsync(request.OrderIds.ToArray(), kind, new Paging(request.Limit, request.Cursor), context.CancellationToken))
+        await foreach (OrderHistory item in _orders.GetOrderHistoryAsync(request.OrderIds.ToArray(), request.Kind.ToDomain(), new Paging(request.Limit, request.Cursor), context.CancellationToken))
         {
             response.Items.Add(item.ToGrpc());
         }
@@ -73,17 +63,7 @@ public sealed class OrdersGrpcService : OrderService.OrderServiceBase
 
     public override async Task GetOrderHistoryStream(GetOrderHistoryRequest request, IServerStreamWriter<OrderHistoryItem> responseStream, ServerCallContext context)
     {
-        Core.Domain.Enums.OrderHistoryItemKind? kind = request.Kind switch
-        {
-            OrderHistoryItemKind.Unspecified => null,
-            OrderHistoryItemKind.CreatedItem => Core.Domain.Enums.OrderHistoryItemKind.Created,
-            OrderHistoryItemKind.ItemAdded => Core.Domain.Enums.OrderHistoryItemKind.ItemAdded,
-            OrderHistoryItemKind.ItemRemoved => Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved,
-            OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
-            _ => null,
-        };
-
-        await foreach (OrderHistory item in _orders.GetOrderHistoryAsync(request.OrderIds.ToArray(), kind, new Paging(request.Limit, request.Cursor), context.CancellationToken))
+        await foreach (OrderHistory item in _orders.GetOrderHistoryAsync(request.OrderIds.ToArray(), request.Kind.ToDomain(), new Paging(request.Limit, request.Cursor), context.CancellationToken))
         {
             await responseStream.WriteAsync(item.ToGrpc());
         }

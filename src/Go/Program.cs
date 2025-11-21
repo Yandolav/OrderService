@@ -29,12 +29,6 @@ IConfigurationRoot appConfig = new ConfigurationBuilder()
     .Add(new ExternalConfigurationSource(externalProvider))
     .Build();
 
-await using (ServiceProvider serviceProvider = services.BuildServiceProvider())
-{
-    IConfigRefreshService configRefresh = serviceProvider.GetRequiredService<IConfigRefreshService>();
-    await configRefresh.RefreshOnceAsync(CancellationToken.None);
-}
-
 services.Configure<DatabaseOptions>(appConfig.GetSection("Database"));
 services
     .AddPostgres()
@@ -43,6 +37,8 @@ services
     .AddMigrations();
 
 ServiceProvider sp = services.BuildServiceProvider();
+IConfigRefreshService configRefresh = sp.GetRequiredService<IConfigRefreshService>();
+await configRefresh.RefreshOnceAsync(CancellationToken.None);
 sp.RunMigrations();
 
 IProductsService products = sp.GetRequiredService<IProductsService>();

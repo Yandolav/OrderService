@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 
-namespace HttpGateway.DI;
+namespace HttpGateway.Extensions;
 
 public static class WebHostExtensions
 {
