@@ -47,20 +47,20 @@ public sealed class ErrorHandlingInterceptor : Interceptor
 
     private RpcException BuildRpcException(Exception exception)
     {
-        (StatusCode status, string code, string message) = MapException(exception);
+        GrpcError error = MapException(exception);
 
-        _logger.LogWarning(exception, "gRPC error {Code}", code);
+        _logger.LogWarning(exception, "gRPC error {Code}", error.Code);
 
         var trailers = new Metadata
         {
-            { "error-code", code },
-            { "error-message", message },
+            { "error-code", ToErrorCodeString(error.Code) },
+            { "error-message", error.Message },
         };
 
-        return new RpcException(new Status(status, message), trailers);
+        return new RpcException(new Status(error.Status, error.Message), trailers);
     }
 
-    private (StatusCode Status, string Code, string Message) MapException(Exception exception)
+    private GrpcError MapException(Exception exception)
     {
         switch (exception)
         {
@@ -68,21 +68,35 @@ public sealed class ErrorHandlingInterceptor : Interceptor
             {
                 StatusCode status = appException.Code switch
                 {
-                    string code when code == ErrorCodes.InvalidArgument => StatusCode.InvalidArgument,
-                    string code when code == ErrorCodes.NotFound => StatusCode.NotFound,
-                    string code when code == ErrorCodes.ForbiddenForState => StatusCode.FailedPrecondition,
-                    string code when code == ErrorCodes.InvalidState => StatusCode.FailedPrecondition,
+                    ErrorCodes.InvalidArgument => StatusCode.InvalidArgument,
+                    ErrorCodes.NotFound => StatusCode.NotFound,
+                    ErrorCodes.ForbiddenForState => StatusCode.FailedPrecondition,
+                    ErrorCodes.InvalidState => StatusCode.FailedPrecondition,
+                    ErrorCodes.InternalError => StatusCode.Internal,
                     _ => StatusCode.Internal,
                 };
 
-                return (status, appException.Code, appException.Message);
+                return new GrpcError(status, appException.Code, appException.Message);
             }
 
             case ArgumentException or ArgumentOutOfRangeException:
-                return (StatusCode.InvalidArgument, ErrorCodes.InvalidArgument, exception.Message);
+                return new GrpcError(StatusCode.InvalidArgument, ErrorCodes.InvalidArgument, exception.Message);
 
             default:
-                return (StatusCode.Internal, ErrorCodes.InternalError, "internal error");
+                return new GrpcError(StatusCode.Internal, ErrorCodes.InternalError, "internal error");
         }
+    }
+
+    private string ToErrorCodeString(ErrorCodes code)
+    {
+        return code switch
+        {
+            ErrorCodes.InvalidArgument => "invalid_argument",
+            ErrorCodes.NotFound => "not_found",
+            ErrorCodes.ForbiddenForState => "forbidden_for_state",
+            ErrorCodes.InvalidState => "invalid_state",
+            ErrorCodes.InternalError => "internal_error",
+            _ => "internal_error",
+        };
     }
 }

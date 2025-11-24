@@ -1,6 +1,7 @@
 using HttpGateway.Mappings;
 using HttpGateway.Middleware;
 using HttpGateway.Options;
+using HttpGateway.Services;
 using HttpGateway.Swagger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,7 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<GrpcMapper>();
         services.AddSingleton<GrpcExceptionMiddleware>();
+        services.AddScoped<IOrdersGrpcGateway, OrdersGrpcGateway>();
 
         return services;
     }

@@ -10,8 +10,6 @@ public sealed class ProductsService : IProductsService
 
     public ProductsService(IProductsRepository products)
     {
-        ArgumentNullException.ThrowIfNull(products);
-
         _productsRepository = products;
     }
 

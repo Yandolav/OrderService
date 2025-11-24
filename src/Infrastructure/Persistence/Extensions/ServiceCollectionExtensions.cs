@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IProductsService, ProductsService>();
         services.AddScoped<IOrdersService, OrdersService>();
+        services.AddSingleton(TimeProvider.System);
         return services;
     }
 
@@ -40,7 +41,6 @@ public static class ServiceCollectionExtensions
             dataSourceBuilder.MapEnum<OrderState>(pgName: "order_state");
             return dataSourceBuilder.Build();
         });
-        services.AddScoped<ITransactionManager, TransactionScopeTransactionManager>();
         return services;
     }
 

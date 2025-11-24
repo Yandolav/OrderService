@@ -15,9 +15,10 @@ public sealed class GrpcExceptionMiddleware : IMiddleware
         }
         catch (RpcException ex)
         {
-            (HttpStatusCode http, string code, string message) = Map(ex);
-            context.Response.StatusCode = (int)http;
-            await context.Response.WriteAsJsonAsync(new ErrorResponse(code, message));
+            HttpError error = Map(ex);
+
+            context.Response.StatusCode = (int)error.StatusCode;
+            await context.Response.WriteAsJsonAsync(new ErrorResponse(error.Code, error.Message));
         }
         catch
         {
@@ -26,29 +27,29 @@ public sealed class GrpcExceptionMiddleware : IMiddleware
         }
     }
 
-    private static (HttpStatusCode Http, string Code, string Message) Map(RpcException ex)
+    private static HttpError Map(RpcException ex)
     {
         string code = ex.Trailers.FirstOrDefault(t => t.Key.Equals("error-code", StringComparison.OrdinalIgnoreCase))?.Value ?? "internal_error";
         string message = ex.Trailers.FirstOrDefault(t => t.Key.Equals("error-message", StringComparison.OrdinalIgnoreCase))?.Value ?? (string.IsNullOrWhiteSpace(ex.Status.Detail) ? "internal error" : ex.Status.Detail);
 
-        HttpStatusCode http;
+        HttpStatusCode httpStatus;
         if (ex.StatusCode == StatusCode.InvalidArgument)
         {
-            http = HttpStatusCode.BadRequest;
+            httpStatus = HttpStatusCode.BadRequest;
         }
         else if (ex.StatusCode == StatusCode.NotFound)
         {
-            http = HttpStatusCode.NotFound;
+            httpStatus = HttpStatusCode.NotFound;
         }
         else if (ex.StatusCode == StatusCode.FailedPrecondition)
         {
-            http = HttpStatusCode.Conflict;
+            httpStatus = HttpStatusCode.Conflict;
         }
         else
         {
-            http = HttpStatusCode.InternalServerError;
+            httpStatus = HttpStatusCode.InternalServerError;
         }
 
-        return (http, code, message);
+        return new HttpError(httpStatus, code, message);
     }
 }

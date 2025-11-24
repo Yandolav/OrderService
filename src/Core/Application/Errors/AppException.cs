@@ -2,9 +2,9 @@ namespace Core.Application.Errors;
 
 public abstract class AppException : Exception
 {
-    public string Code { get; }
+    public ErrorCodes Code { get; }
 
-    protected AppException(string code, string message, Exception? inner = null) : base(message, inner)
+    protected AppException(ErrorCodes code, string message, Exception? inner = null) : base(message, inner)
     {
         Code = code;
     }

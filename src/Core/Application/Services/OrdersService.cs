@@ -6,6 +6,7 @@ using Core.Application.Ports.SecondaryPorts;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Payloads;
+using System.Transactions;
 
 namespace Core.Application.Services;
 
@@ -14,30 +15,30 @@ public sealed class OrdersService : IOrdersService
     private readonly IOrdersRepository _ordersRepository;
     private readonly IOrderItemsRepository _ordersItemsRepository;
     private readonly IOrderHistoryRepository _ordersHistoryRepository;
-    private readonly ITransactionManager _transactionManager;
+    private readonly TimeProvider _timeProvider;
 
-    public OrdersService(IOrdersRepository ordersRepository, IOrderItemsRepository ordersItemsRepository, IOrderHistoryRepository ordersHistoryRepository, ITransactionManager transactionManager)
+    public OrdersService(IOrdersRepository ordersRepository, IOrderItemsRepository ordersItemsRepository, IOrderHistoryRepository ordersHistoryRepository, TimeProvider timeProvider)
     {
-        ArgumentNullException.ThrowIfNull(ordersRepository);
-        ArgumentNullException.ThrowIfNull(ordersItemsRepository);
-        ArgumentNullException.ThrowIfNull(ordersHistoryRepository);
-        ArgumentNullException.ThrowIfNull(transactionManager);
-
         _ordersRepository = ordersRepository;
         _ordersItemsRepository = ordersItemsRepository;
         _ordersHistoryRepository = ordersHistoryRepository;
-        _transactionManager = transactionManager;
+        _timeProvider = timeProvider;
     }
 
     public async Task<long> CreateOrderAsync(string createdBy, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(createdBy)) throw new InvalidArgumentAppException("createdBy is required");
 
-        await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        using var transaction = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
+
+        DateTimeOffset now = _timeProvider.GetUtcNow();
         long orderId = await _ordersRepository.CreateAsync(createdBy, now, cancellationToken);
         await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.Created, new OrderCreatedPayload(createdBy), cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+
+        transaction.Complete();
         return orderId;
     }
 
@@ -51,11 +52,15 @@ public sealed class OrdersService : IOrdersService
             throw new ForbiddenForStateAppException("add_items", order.OrderState.ToString());
         }
 
-        await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
+        using var transaction = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
+
         long itemId = await _ordersItemsRepository.CreateAsync(orderId, productId, quantity, cancellationToken);
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = _timeProvider.GetUtcNow();
         await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.ItemAdded, new ItemAddedPayload(productId, quantity), cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        transaction.Complete();
         return itemId;
     }
 
@@ -68,13 +73,17 @@ public sealed class OrdersService : IOrdersService
             throw new ForbiddenForStateAppException("remove_items", order.OrderState.ToString());
         }
 
-        await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
+        using var transaction = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
+
         bool deleted = await _ordersItemsRepository.SoftDeleteAsync(orderItemId, cancellationToken);
         if (deleted)
         {
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            DateTimeOffset now = _timeProvider.GetUtcNow();
             await _ordersHistoryRepository.CreateAsync(order.OrderId, now, OrderHistoryItemKind.ItemRemoved, new ItemRemovedPayload(item.ProductId, item.OrderItemQuantity), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+            transaction.Complete();
         }
 
         return deleted;
@@ -106,13 +115,17 @@ public sealed class OrdersService : IOrdersService
         if (order.OrderState == newState) throw new InvalidStateAppException("already in requested state", order.OrderState.ToString(), newState.ToString());
         if (order.OrderState is OrderState.Completed or OrderState.Cancelled) throw new InvalidStateAppException("state is terminal", order.OrderState.ToString(), newState.ToString());
 
-        await using ITransaction transaction = await _transactionManager.BeginAsync(cancellationToken);
+        using var transaction = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
+
         bool updated = await _ordersRepository.UpdateStateAsync(orderId, newState, cancellationToken);
         if (updated)
         {
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            DateTimeOffset now = _timeProvider.GetUtcNow();
             await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.StateChanged, new StateChangedPayload(order.OrderState, newState), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+            transaction.Complete();
         }
 
         return updated;

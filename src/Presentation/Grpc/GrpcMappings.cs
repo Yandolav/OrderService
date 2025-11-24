@@ -27,8 +27,9 @@ internal static class GrpcMappings
         return item;
     }
 
-    public static Core.Domain.Enums.OrderHistoryItemKind? ToDomain(this OrderHistoryItemKind kind) =>
-        kind switch
+    public static Core.Domain.Enums.OrderHistoryItemKind? ToDomain(this OrderHistoryItemKind kind)
+    {
+        return kind switch
         {
             OrderHistoryItemKind.Unspecified => null,
             OrderHistoryItemKind.CreatedItem => Core.Domain.Enums.OrderHistoryItemKind.Created,
@@ -37,6 +38,7 @@ internal static class GrpcMappings
             OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
             _ => null,
         };
+    }
 
     private static void SetPayload(OrderHistoryItem item, OrderHistory orderHistoryItem)
     {
