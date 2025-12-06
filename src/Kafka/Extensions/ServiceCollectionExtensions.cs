@@ -1,6 +1,5 @@
 using Confluent.Kafka;
 using Core.Application.Ports.SecondaryPorts;
-using Google.Protobuf;
 using Kafka.Consumer;
 using Kafka.Consumer.Handlers;
 using Kafka.Producer;
@@ -13,10 +12,10 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddKafka(this IServiceCollection services)
     {
-        services.AddSingleton<MessageParser<OrderProcessingKey>>(_ => OrderProcessingKey.Parser);
-        services.AddSingleton<MessageParser<OrderProcessingValue>>(_ => OrderProcessingValue.Parser);
-        services.AddSingleton<MessageParser<OrderCreationKey>>(_ => OrderCreationKey.Parser);
-        services.AddSingleton<MessageParser<OrderCreationValue>>(_ => OrderCreationValue.Parser);
+        services.AddSingleton(_ => OrderProcessingKey.Parser);
+        services.AddSingleton(_ => OrderProcessingValue.Parser);
+        services.AddSingleton(_ => OrderCreationKey.Parser);
+        services.AddSingleton(_ => OrderCreationValue.Parser);
 
         services.AddSingleton<ISerializer<OrderCreationKey>, ProtobufSerializer<OrderCreationKey>>();
         services.AddSingleton<ISerializer<OrderCreationValue>, ProtobufSerializer<OrderCreationValue>>();

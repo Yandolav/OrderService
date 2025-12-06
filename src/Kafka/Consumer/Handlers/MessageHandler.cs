@@ -57,7 +57,7 @@ public class MessageHandler : IMessageHandler
     {
         long orderId = eventCase.OrderId;
         var payload = new ApprovalResultPayload(eventCase.IsApproved, eventCase.CreatedBy, eventCase.CreatedAt.ToDateTimeOffset());
-        await _historyRepository.CreateAsync(orderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.ApprovalReceived, payload,  cancellationToken);
+        await _historyRepository.CreateAsync(orderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.ApprovalReceived, payload, cancellationToken);
 
         if (!eventCase.IsApproved)
         {
@@ -86,7 +86,7 @@ public class MessageHandler : IMessageHandler
     private async Task HandleDeliveryStartedAsync(OrderProcessingValue.Types.OrderDeliveryStarted eventCase, CancellationToken cancellationToken)
     {
         var payload = new DeliveryStartedPayload(eventCase.DeliveredBy, eventCase.StartedAt.ToDateTimeOffset());
-        await _historyRepository.CreateAsync(eventCase.OrderId, _timeProvider.GetUtcNow(),  OrderHistoryItemKind.DeliveryStarted, payload, cancellationToken);
+        await _historyRepository.CreateAsync(eventCase.OrderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.DeliveryStarted, payload, cancellationToken);
     }
 
     private async Task HandleDeliveryFinishedAsync(OrderProcessingValue.Types.OrderDeliveryFinished eventCase, CancellationToken cancellationToken)

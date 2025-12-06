@@ -121,7 +121,7 @@ public sealed class OrdersService : IOrdersService
 
     public async Task<bool> CancelToFailureAsync(long orderId, CancellationToken cancellationToken)
     {
-        return await ChangeState(orderId,  OrderState.Cancelled, cancellationToken);
+        return await ChangeState(orderId, OrderState.Cancelled, cancellationToken);
     }
 
     public IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[] orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken)
