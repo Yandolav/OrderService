@@ -11,7 +11,7 @@ public class ApprovalResultPayloadDto : OrderHistoryItemPayloadDto
 
     public bool IsApproved { get; }
 
-    public string CreatedBy { get;  }
+    public string CreatedBy { get; }
 
     public DateTimeOffset CreatedAt { get; }
 }
