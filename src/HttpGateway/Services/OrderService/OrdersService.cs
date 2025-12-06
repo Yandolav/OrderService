@@ -5,14 +5,14 @@ using HttpGateway.Models.CreateOrder;
 using HttpGateway.Models.OrderHistory;
 using Presentation.Grpc;
 
-namespace HttpGateway.Services;
+namespace HttpGateway.Services.OrderService;
 
-public sealed class OrdersGrpcGateway : IOrdersGrpcGateway
+public sealed class OrdersService : IOrdersService
 {
-    private readonly OrderService.OrderServiceClient _client;
+    private readonly Presentation.Grpc.OrderService.OrderServiceClient _client;
     private readonly GrpcMapper _mapper;
 
-    public OrdersGrpcGateway(OrderService.OrderServiceClient client, GrpcMapper mapper)
+    public OrdersService(Presentation.Grpc.OrderService.OrderServiceClient client, GrpcMapper mapper)
     {
         _client = client;
         _mapper = mapper;

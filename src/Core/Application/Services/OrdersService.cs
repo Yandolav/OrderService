@@ -15,13 +15,15 @@ public sealed class OrdersService : IOrdersService
     private readonly IOrdersRepository _ordersRepository;
     private readonly IOrderItemsRepository _ordersItemsRepository;
     private readonly IOrderHistoryRepository _ordersHistoryRepository;
+    private readonly IOrderEventsProducer _producer;
     private readonly TimeProvider _timeProvider;
 
-    public OrdersService(IOrdersRepository ordersRepository, IOrderItemsRepository ordersItemsRepository, IOrderHistoryRepository ordersHistoryRepository, TimeProvider timeProvider)
+    public OrdersService(IOrdersRepository ordersRepository, IOrderItemsRepository ordersItemsRepository, IOrderHistoryRepository ordersHistoryRepository, TimeProvider timeProvider, IOrderEventsProducer producer)
     {
         _ordersRepository = ordersRepository;
         _ordersItemsRepository = ordersItemsRepository;
         _ordersHistoryRepository = ordersHistoryRepository;
+        _producer = producer;
         _timeProvider = timeProvider;
     }
 
@@ -39,6 +41,9 @@ public sealed class OrdersService : IOrdersService
         await _ordersHistoryRepository.CreateAsync(orderId, now, OrderHistoryItemKind.Created, new OrderCreatedPayload(createdBy), cancellationToken);
 
         transaction.Complete();
+
+        var order = new Order(orderId, OrderState.Created, now, createdBy);
+        await _producer.OrderCreatedAsync(order, cancellationToken);
         return orderId;
     }
 
@@ -46,16 +51,16 @@ public sealed class OrdersService : IOrdersService
     {
         if (quantity <= 0) throw new InvalidArgumentAppException("quantity must be > 0");
 
+        using var transaction = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
+
         Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
         if (order.OrderState != OrderState.Created)
         {
             throw new ForbiddenForStateAppException("add_items", order.OrderState.ToString());
         }
-
-        using var transaction = new TransactionScope(
-            TransactionScopeOption.Required,
-            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
-            TransactionScopeAsyncFlowOption.Enabled);
 
         long itemId = await _ordersItemsRepository.CreateAsync(orderId, productId, quantity, cancellationToken);
         DateTimeOffset now = _timeProvider.GetUtcNow();
@@ -66,17 +71,17 @@ public sealed class OrdersService : IOrdersService
 
     public async Task<bool> RemoveOrderItemAsync(long orderItemId, CancellationToken cancellationToken)
     {
+        using var transaction = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
+
         OrderItem item = await _ordersItemsRepository.GetByIdAsync(orderItemId, cancellationToken) ?? throw new NotFoundAppException("OrderItem", orderItemId);
         Order order = await _ordersRepository.GetByIdAsync(item.OrderId, cancellationToken) ?? throw new NotFoundAppException("Order", item.OrderId);
         if (order.OrderState != OrderState.Created)
         {
             throw new ForbiddenForStateAppException("remove_items", order.OrderState.ToString());
         }
-
-        using var transaction = new TransactionScope(
-            TransactionScopeOption.Required,
-            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
-            TransactionScopeAsyncFlowOption.Enabled);
 
         bool deleted = await _ordersItemsRepository.SoftDeleteAsync(orderItemId, cancellationToken);
         if (deleted)
@@ -91,7 +96,15 @@ public sealed class OrdersService : IOrdersService
 
     public async Task<bool> StartProcessingAsync(long orderId, CancellationToken cancellationToken)
     {
-        return await ChangeState(orderId, OrderState.Processing, cancellationToken);
+        bool started = await ChangeState(orderId, OrderState.Processing, cancellationToken);
+
+        if (started)
+        {
+            Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
+            await _producer.OrderProcessingStartedAsync(order, cancellationToken);
+        }
+
+        return started;
     }
 
     public async Task<bool> CompleteAsync(long orderId, CancellationToken cancellationToken)
@@ -101,7 +114,14 @@ public sealed class OrdersService : IOrdersService
 
     public async Task<bool> CancelAsync(long orderId, CancellationToken cancellationToken)
     {
+        Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
+        if (order.OrderState != OrderState.Created) throw new ForbiddenForStateAppException("cancel", order.OrderState.ToString());
         return await ChangeState(orderId, OrderState.Cancelled, cancellationToken);
+    }
+
+    public async Task<bool> CancelToFailureAsync(long orderId, CancellationToken cancellationToken)
+    {
+        return await ChangeState(orderId,  OrderState.Cancelled, cancellationToken);
     }
 
     public IAsyncEnumerable<OrderHistory> GetOrderHistoryAsync(long[] orderIds, OrderHistoryItemKind? kind, Paging paging, CancellationToken cancellationToken)
@@ -111,14 +131,14 @@ public sealed class OrdersService : IOrdersService
 
     private async Task<bool> ChangeState(long orderId, OrderState newState, CancellationToken cancellationToken)
     {
-        Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
-        if (order.OrderState == newState) throw new InvalidStateAppException("already in requested state", order.OrderState.ToString(), newState.ToString());
-        if (order.OrderState is OrderState.Completed or OrderState.Cancelled) throw new InvalidStateAppException("state is terminal", order.OrderState.ToString(), newState.ToString());
-
         using var transaction = new TransactionScope(
             TransactionScopeOption.Required,
             new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
             TransactionScopeAsyncFlowOption.Enabled);
+
+        Order order = await _ordersRepository.GetByIdAsync(orderId, cancellationToken) ?? throw new NotFoundAppException("Order", orderId);
+        if (order.OrderState == newState) throw new InvalidStateAppException("already in requested state", order.OrderState.ToString(), newState.ToString());
+        if (order.OrderState is OrderState.Completed or OrderState.Cancelled) throw new InvalidStateAppException("state is terminal", order.OrderState.ToString(), newState.ToString());
 
         bool updated = await _ordersRepository.UpdateStateAsync(orderId, newState, cancellationToken);
         if (updated)

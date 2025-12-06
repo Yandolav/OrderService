@@ -2,7 +2,7 @@ using HttpGateway.Models;
 using HttpGateway.Models.AddOrderItem;
 using HttpGateway.Models.CreateOrder;
 using HttpGateway.Models.OrderHistory;
-using HttpGateway.Services;
+using HttpGateway.Services.OrderService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HttpGateway.Controllers;
@@ -11,11 +11,11 @@ namespace HttpGateway.Controllers;
 [Route("api/[controller]")]
 public sealed class OrdersController : ControllerBase
 {
-    private readonly IOrdersGrpcGateway _ordersGateway;
+    private readonly IOrdersService _ordersService;
 
-    public OrdersController(IOrdersGrpcGateway ordersGateway)
+    public OrdersController(IOrdersService ordersService)
     {
-        _ordersGateway = ordersGateway;
+        _ordersService = ordersService;
     }
 
     [HttpPost]
@@ -26,7 +26,7 @@ public sealed class OrdersController : ControllerBase
         [FromBody] CreateOrderRequestDto request,
         CancellationToken cancellationToken)
     {
-        CreateOrderResponseDto result = await _ordersGateway.CreateOrderAsync(request, cancellationToken);
+        CreateOrderResponseDto result = await _ordersService.CreateOrderAsync(request, cancellationToken);
         return Ok(result);
     }
 
@@ -41,11 +41,11 @@ public sealed class OrdersController : ControllerBase
         [FromBody] AddOrderItemRequestDto request,
         CancellationToken cancellationToken)
     {
-        AddOrderItemResponseDto result = await _ordersGateway.AddOrderItemAsync(orderId, request, cancellationToken);
+        AddOrderItemResponseDto result = await _ordersService.AddOrderItemAsync(orderId, request, cancellationToken);
         return Ok(result);
     }
 
-    [HttpDelete("/api/order-items/{orderItemId:long}")]
+    [HttpDelete("{orderId:long}/items/{orderItemId:long}")]
     [ProducesResponseType(typeof(RemoveOrderItemResponseDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 409)]
@@ -54,11 +54,11 @@ public sealed class OrdersController : ControllerBase
         long orderItemId,
         CancellationToken cancellationToken)
     {
-        RemoveOrderItemResponseDto result = await _ordersGateway.RemoveOrderItemAsync(orderItemId, cancellationToken);
+        RemoveOrderItemResponseDto result = await _ordersService.RemoveOrderItemAsync(orderItemId, cancellationToken);
         return Ok(result);
     }
 
-    [HttpPost("{orderId:long}/start-processing")]
+    [HttpPost("{orderId:long}/processing")]
     [ProducesResponseType(typeof(ChangeStateResponseDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 409)]
@@ -67,24 +67,11 @@ public sealed class OrdersController : ControllerBase
         long orderId,
         CancellationToken cancellationToken)
     {
-        ChangeStateResponseDto result = await _ordersGateway.StartProcessingAsync(orderId, cancellationToken);
+        ChangeStateResponseDto result = await _ordersService.StartProcessingAsync(orderId, cancellationToken);
         return Ok(result);
     }
 
-    [HttpPost("{orderId:long}/complete")]
-    [ProducesResponseType(typeof(ChangeStateResponseDto), 200)]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
-    [ProducesResponseType(typeof(ErrorResponse), 409)]
-    [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<ActionResult<ChangeStateResponseDto>> Complete(
-        long orderId,
-        CancellationToken cancellationToken)
-    {
-        ChangeStateResponseDto result = await _ordersGateway.CompleteAsync(orderId, cancellationToken);
-        return Ok(result);
-    }
-
-    [HttpPost("{orderId:long}/cancel")]
+    [HttpPost("{orderId:long}/cancellation")]
     [ProducesResponseType(typeof(ChangeStateResponseDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 409)]
@@ -93,7 +80,7 @@ public sealed class OrdersController : ControllerBase
         long orderId,
         CancellationToken cancellationToken)
     {
-        ChangeStateResponseDto result = await _ordersGateway.CancelAsync(orderId, cancellationToken);
+        ChangeStateResponseDto result = await _ordersService.CancelAsync(orderId, cancellationToken);
         return Ok(result);
     }
 
@@ -108,7 +95,7 @@ public sealed class OrdersController : ControllerBase
         [FromQuery] long cursor,
         CancellationToken cancellationToken)
     {
-        GetOrderHistoryResponseDto result = await _ordersGateway.GetHistoryAsync(orderIds, kind, limit, cursor, cancellationToken);
+        GetOrderHistoryResponseDto result = await _ordersService.GetHistoryAsync(orderIds, kind, limit, cursor, cancellationToken);
         return Ok(result);
     }
 }

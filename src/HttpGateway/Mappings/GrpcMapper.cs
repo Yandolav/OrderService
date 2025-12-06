@@ -29,6 +29,11 @@ public sealed class GrpcMapper
             OrderHistoryItemKind.ItemAdded => OrderHistoryItemKindDto.ItemAdded,
             OrderHistoryItemKind.ItemRemoved => OrderHistoryItemKindDto.ItemRemoved,
             OrderHistoryItemKind.StateChanged => OrderHistoryItemKindDto.StateChanged,
+            OrderHistoryItemKind.ApprovalReceived => OrderHistoryItemKindDto.ApprovalReceived,
+            OrderHistoryItemKind.PackingStarted => OrderHistoryItemKindDto.PackingStarted,
+            OrderHistoryItemKind.PackingFinished => OrderHistoryItemKindDto.PackingFinished,
+            OrderHistoryItemKind.DeliveryStarted => OrderHistoryItemKindDto.DeliveryStarted,
+            OrderHistoryItemKind.DeliveryFinished => OrderHistoryItemKindDto.DeliveryFinished,
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
     }
@@ -68,6 +73,31 @@ public sealed class GrpcMapper
                 break;
             }
 
+            case OrderHistoryItemKind.ApprovalReceived:
+                if (item.ApprovalResult is null) throw new ArgumentOutOfRangeException(nameof(item), "History payload 'approval_received' is missing.");
+                payload = new ApprovalResultPayloadDto(item.ApprovalResult.IsApproved, item.ApprovalResult.CreatedBy, item.ApprovalResult.CreatedAt.ToDateTimeOffset());
+                break;
+
+            case OrderHistoryItemKind.PackingStarted:
+                if (item.PackingStarted is null) throw new ArgumentOutOfRangeException(nameof(item), "History payload 'packing_started' is missing.");
+                payload = new PackingStartedPayloadDto(item.PackingStarted.PackingBy, item.PackingStarted.StartedAt.ToDateTimeOffset());
+                break;
+
+            case OrderHistoryItemKind.PackingFinished:
+                if (item.PackingFinished is null) throw new ArgumentOutOfRangeException(nameof(item), "History payload 'packing_finished' is missing.");
+                payload = new PackingFinishedPayloadDto(item.PackingFinished.FinishedAt.ToDateTimeOffset(), item.PackingFinished.IsFinishedSuccessfully, item.PackingFinished.FailureReason);
+                break;
+
+            case OrderHistoryItemKind.DeliveryStarted:
+                if (item.DeliveryStarted is null) throw new ArgumentOutOfRangeException(nameof(item), "History payload 'delivery_started' is missing.");
+                payload = new DeliveryStartedPayloadDto(item.DeliveryStarted.DeliveredBy, item.DeliveryStarted.StartedAt.ToDateTimeOffset());
+                break;
+
+            case OrderHistoryItemKind.DeliveryFinished:
+                if (item.DeliveryFinished is null) throw new ArgumentOutOfRangeException(nameof(item), "History payload 'delivery_finished' is missing.");
+                payload = new DeliveryFinishedPayloadDto(item.DeliveryFinished.FinishedAt.ToDateTimeOffset(), item.DeliveryFinished.IsFinishedSuccessfully, item.DeliveryFinished.FailureReason);
+                break;
+
             case OrderHistoryItemKind.Unspecified:
             default:
                 throw new ArgumentOutOfRangeException(nameof(item), "Unknown or unspecified history kind.");
@@ -90,6 +120,11 @@ public sealed class GrpcMapper
             OrderHistoryItemKindDto.ItemAdded => OrderHistoryItemKind.ItemAdded,
             OrderHistoryItemKindDto.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
             OrderHistoryItemKindDto.StateChanged => OrderHistoryItemKind.StateChanged,
+            OrderHistoryItemKindDto.ApprovalReceived => OrderHistoryItemKind.ApprovalReceived,
+            OrderHistoryItemKindDto.PackingStarted => OrderHistoryItemKind.PackingStarted,
+            OrderHistoryItemKindDto.PackingFinished => OrderHistoryItemKind.PackingFinished,
+            OrderHistoryItemKindDto.DeliveryStarted => OrderHistoryItemKind.DeliveryStarted,
+            OrderHistoryItemKindDto.DeliveryFinished => OrderHistoryItemKind.DeliveryFinished,
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
     }

@@ -7,4 +7,9 @@ public enum OrderHistoryItemKindDto
     ItemAdded = 2,
     ItemRemoved = 3,
     StateChanged = 4,
+    ApprovalReceived = 5,
+    PackingStarted = 6,
+    PackingFinished = 7,
+    DeliveryStarted = 8,
+    DeliveryFinished = 9,
 }

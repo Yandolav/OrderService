@@ -18,6 +18,11 @@ internal static class GrpcMappings
                 Core.Domain.Enums.OrderHistoryItemKind.ItemAdded => OrderHistoryItemKind.ItemAdded,
                 Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
                 Core.Domain.Enums.OrderHistoryItemKind.StateChanged => OrderHistoryItemKind.StateChanged,
+                Core.Domain.Enums.OrderHistoryItemKind.ApprovalReceived => OrderHistoryItemKind.ApprovalReceived,
+                Core.Domain.Enums.OrderHistoryItemKind.PackingStarted => OrderHistoryItemKind.PackingStarted,
+                Core.Domain.Enums.OrderHistoryItemKind.PackingFinished => OrderHistoryItemKind.PackingFinished,
+                Core.Domain.Enums.OrderHistoryItemKind.DeliveryStarted => OrderHistoryItemKind.DeliveryStarted,
+                Core.Domain.Enums.OrderHistoryItemKind.DeliveryFinished => OrderHistoryItemKind.DeliveryFinished,
                 _ => OrderHistoryItemKind.Unspecified,
             },
         };
@@ -36,6 +41,11 @@ internal static class GrpcMappings
             OrderHistoryItemKind.ItemAdded => Core.Domain.Enums.OrderHistoryItemKind.ItemAdded,
             OrderHistoryItemKind.ItemRemoved => Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved,
             OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
+            OrderHistoryItemKind.ApprovalReceived => Core.Domain.Enums.OrderHistoryItemKind.ApprovalReceived,
+            OrderHistoryItemKind.PackingStarted => Core.Domain.Enums.OrderHistoryItemKind.PackingStarted,
+            OrderHistoryItemKind.PackingFinished => Core.Domain.Enums.OrderHistoryItemKind.PackingFinished,
+            OrderHistoryItemKind.DeliveryStarted => Core.Domain.Enums.OrderHistoryItemKind.DeliveryStarted,
+            OrderHistoryItemKind.DeliveryFinished => Core.Domain.Enums.OrderHistoryItemKind.DeliveryFinished,
             _ => null,
         };
     }
@@ -75,8 +85,48 @@ internal static class GrpcMappings
                 };
                 break;
 
-            default:
-                throw new ArgumentOutOfRangeException(nameof(orderHistoryItem));
+            case Core.Domain.Payloads.ApprovalResultPayload approvalResultPayload:
+                item.ApprovalResult = new ApprovalResultPayload
+                {
+                    IsApproved = approvalResultPayload.IsApproved,
+                    CreatedBy = approvalResultPayload.CreatedBy,
+                    CreatedAt = approvalResultPayload.CreatedAt.ToTimestamp(),
+                };
+                break;
+
+            case Core.Domain.Payloads.PackingStartedPayload packingStartedPayload:
+                item.PackingStarted = new PackingStartedPayload
+                {
+                    PackingBy = packingStartedPayload.PackingBy,
+                    StartedAt = packingStartedPayload.StartedAt.ToTimestamp(),
+                };
+                break;
+
+            case Core.Domain.Payloads.PackingFinishedPayload packingFinishedPayload:
+                item.PackingFinished = new PackingFinishedPayload
+                {
+                    FinishedAt = packingFinishedPayload.FinishedAt.ToTimestamp(),
+                    IsFinishedSuccessfully = packingFinishedPayload.IsSuccessful,
+                    FailureReason = packingFinishedPayload.FailureReason,
+                };
+                break;
+
+            case Core.Domain.Payloads.DeliveryStartedPayload deliveryStartedPayload:
+                item.DeliveryStarted = new DeliveryStartedPayload
+                {
+                    DeliveredBy = deliveryStartedPayload.DeliveredBy,
+                    StartedAt = deliveryStartedPayload.StartedAt.ToTimestamp(),
+                };
+                break;
+
+            case Core.Domain.Payloads.DeliveryFinishedPayload deliveryFinishedPayload:
+                item.DeliveryFinished = new DeliveryFinishedPayload
+                {
+                    FinishedAt = deliveryFinishedPayload.FinishedAt.ToTimestamp(),
+                    IsFinishedSuccessfully = deliveryFinishedPayload.IsSuccessful,
+                    FailureReason = deliveryFinishedPayload.FailureReason,
+                };
+                break;
         }
     }
 

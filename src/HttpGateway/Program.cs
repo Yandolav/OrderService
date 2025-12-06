@@ -27,7 +27,9 @@ builder.Services.AddHostedService<ConfigRefreshBackgroundService>();
 
 builder.Services.Configure<HttpServerOptions>(builder.Configuration.GetSection("HttpServer"));
 builder.Services.Configure<GrpcClientOptions>(builder.Configuration.GetSection("GrpcClient"));
+builder.Services.Configure<ProcessingServiceGrpcOptions>(builder.Configuration.GetSection("ProcessingServiceGrpc"));
 builder.Services.AddHttpGateway();
+
 builder.WebHost.ConfigureHttpHost(builder.Configuration);
 
 WebApplication app = builder.Build();

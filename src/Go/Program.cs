@@ -3,6 +3,8 @@ using Core.Application.Ports.PrimaryPorts;
 using Core.Domain.Entities;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Extensions;
+using Kafka.Extensions;
+using Kafka.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
@@ -35,6 +37,11 @@ services
     .AddRepositories()
     .AddApplicationServices()
     .AddMigrations();
+
+services.AddKafka();
+services.Configure<KafkaOptions>(appConfig.GetSection("Kafka:Connection"));
+services.Configure<KafkaTopicsOptions>(appConfig.GetSection("Kafka:Topics"));
+services.Configure<KafkaConsumerOptions>(appConfig.GetSection("KafkaConsumer"));
 
 ServiceProvider sp = services.BuildServiceProvider();
 IConfigRefreshService configRefresh = sp.GetRequiredService<IConfigRefreshService>();

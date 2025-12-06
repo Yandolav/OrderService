@@ -20,7 +20,9 @@
     <Project Path="src\Infrastructure\Infrastructure.csproj" Type="Classic C#" />
     <Project Path="src\Presentation\Presentation.csproj" Type="Classic C#" />
   </Folder>
-  <Folder Name="/src/lab-4/" />
+  <Folder Name="/src/lab-4/">
+    <Project Path="src\Kafka\Kafka.csproj" Type="Classic C#" />
+  </Folder>
   <Folder Name="/src/lab-5/" />
   <Folder Name="/tests/">
     <Project Path="src\Go\Go.csproj" Type="Classic C#" />

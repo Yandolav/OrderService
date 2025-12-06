@@ -1,5 +1,8 @@
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Extensions;
+using Kafka.Consumer.BackgroundServices;
+using Kafka.Extensions;
+using Kafka.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +40,14 @@ builder.Services.AddHostedService<ConfigRefreshBackgroundService>();
 builder.Services.AddHostedService<DatabaseMigrationBackgroundService>();
 builder.Services.Configure<GrpcServerOptions>(builder.Configuration.GetSection("GrpcServer"));
 builder.Services.AddGrpcPresentation();
+
+builder.Services.AddHostedService<OrderProcessingBackgroundService>();
+builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("Kafka:Connection"));
+builder.Services.Configure<KafkaTopicsOptions>(builder.Configuration.GetSection("Kafka:Topics"));
+builder.Services.Configure<KafkaConsumerOptions>(builder.Configuration.GetSection("KafkaConsumer"));
+builder.Services.Configure<BackgroundServiceOptions>(builder.Configuration.GetSection("BackgroundService"));
+builder.Services.AddKafka();
+
 builder.WebHost.ConfigureGrpcHost(builder.Configuration);
 
 WebApplication app = builder.Build();

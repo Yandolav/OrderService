@@ -3,9 +3,9 @@ using HttpGateway.Models.AddOrderItem;
 using HttpGateway.Models.CreateOrder;
 using HttpGateway.Models.OrderHistory;
 
-namespace HttpGateway.Services;
+namespace HttpGateway.Services.OrderService;
 
-public interface IOrdersGrpcGateway
+public interface IOrdersService
 {
     Task<CreateOrderResponseDto> CreateOrderAsync(
         CreateOrderRequestDto request,
