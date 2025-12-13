@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IProductsService, ProductsService>();
         services.AddScoped<IOrdersService, OrdersService>();
+        services.AddScoped<IOrderHistoryService, OrderHistoryService>();
         services.AddSingleton(TimeProvider.System);
         return services;
     }

@@ -1,6 +1,5 @@
 using Confluent.Kafka;
 using Core.Application.Ports.PrimaryPorts;
-using Core.Application.Ports.SecondaryPorts;
 using Core.Domain.Enums;
 using Core.Domain.Payloads;
 using Orders.Kafka.Contracts;
@@ -10,14 +9,12 @@ namespace Kafka.Consumer.Handlers;
 public class MessageHandler : IMessageHandler
 {
     private readonly IOrdersService _ordersService;
-    private readonly IOrderHistoryRepository _historyRepository;
-    private readonly TimeProvider _timeProvider;
+    private readonly IOrderHistoryService _historyService;
 
-    public MessageHandler(IOrdersService ordersService, IOrderHistoryRepository historyRepository, TimeProvider timeProvider)
+    public MessageHandler(IOrdersService ordersService, IOrderHistoryService historyService)
     {
         _ordersService = ordersService;
-        _historyRepository = historyRepository;
-        _timeProvider = timeProvider;
+        _historyService = historyService;
     }
 
     public async Task HandleASync(IEnumerable<ConsumeResult<OrderProcessingKey, OrderProcessingValue>> messages, CancellationToken cancellationToken)
@@ -57,7 +54,7 @@ public class MessageHandler : IMessageHandler
     {
         long orderId = eventCase.OrderId;
         var payload = new ApprovalResultPayload(eventCase.IsApproved, eventCase.CreatedBy, eventCase.CreatedAt.ToDateTimeOffset());
-        await _historyRepository.CreateAsync(orderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.ApprovalReceived, payload, cancellationToken);
+        await _historyService.CreateAsync(orderId, OrderHistoryItemKind.ApprovalReceived, payload, cancellationToken);
 
         if (!eventCase.IsApproved)
         {
@@ -68,14 +65,14 @@ public class MessageHandler : IMessageHandler
     private async Task HandlePackingStartedAsync(OrderProcessingValue.Types.OrderPackingStarted eventCase, CancellationToken cancellationToken)
     {
         var payload = new PackingStartedPayload(eventCase.PackingBy, eventCase.StartedAt.ToDateTimeOffset());
-        await _historyRepository.CreateAsync(eventCase.OrderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.PackingStarted, payload, cancellationToken);
+        await _historyService.CreateAsync(eventCase.OrderId, OrderHistoryItemKind.PackingStarted, payload, cancellationToken);
     }
 
     private async Task HandlePackingFinishedAsync(OrderProcessingValue.Types.OrderPackingFinished eventCase, CancellationToken cancellationToken)
     {
         long orderId = eventCase.OrderId;
         var payload = new PackingFinishedPayload(eventCase.FinishedAt.ToDateTimeOffset(), eventCase.IsFinishedSuccessfully, eventCase.FailureReason);
-        await _historyRepository.CreateAsync(orderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.PackingFinished, payload, cancellationToken);
+        await _historyService.CreateAsync(orderId, OrderHistoryItemKind.PackingFinished, payload, cancellationToken);
 
         if (!eventCase.IsFinishedSuccessfully)
         {
@@ -86,14 +83,14 @@ public class MessageHandler : IMessageHandler
     private async Task HandleDeliveryStartedAsync(OrderProcessingValue.Types.OrderDeliveryStarted eventCase, CancellationToken cancellationToken)
     {
         var payload = new DeliveryStartedPayload(eventCase.DeliveredBy, eventCase.StartedAt.ToDateTimeOffset());
-        await _historyRepository.CreateAsync(eventCase.OrderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.DeliveryStarted, payload, cancellationToken);
+        await _historyService.CreateAsync(eventCase.OrderId, OrderHistoryItemKind.DeliveryStarted, payload, cancellationToken);
     }
 
     private async Task HandleDeliveryFinishedAsync(OrderProcessingValue.Types.OrderDeliveryFinished eventCase, CancellationToken cancellationToken)
     {
         long orderId = eventCase.OrderId;
         var payload = new DeliveryFinishedPayload(eventCase.FinishedAt.ToDateTimeOffset(), eventCase.IsFinishedSuccessfully, eventCase.FailureReason);
-        await _historyRepository.CreateAsync(orderId, _timeProvider.GetUtcNow(), OrderHistoryItemKind.DeliveryFinished, payload, cancellationToken);
+        await _historyService.CreateAsync(orderId, OrderHistoryItemKind.DeliveryFinished, payload, cancellationToken);
 
         if (!eventCase.IsFinishedSuccessfully)
         {

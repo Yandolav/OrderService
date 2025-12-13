@@ -2,6 +2,7 @@ using Core.Application.Ports.SecondaryPorts;
 using Core.Domain.Entities;
 using Google.Protobuf.WellKnownTypes;
 using Kafka.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orders.Kafka.Contracts;
 
@@ -9,16 +10,19 @@ namespace Kafka.Producer;
 
 public sealed class OrderEventsProducer : IOrderEventsProducer
 {
-    private readonly IKafkaProducer<OrderCreationKey, OrderCreationValue> _producer;
+    private readonly IKafkaProducer<OrderCreationKey, OrderCreationValue> _mainProducer;
+    private readonly IKafkaProducer<OrderCreationKey, OrderCreationValue> _otherProducer;
     private readonly KafkaTopicsOptions _topics;
     private readonly TimeProvider _timeProvider;
 
     public OrderEventsProducer(
-        IKafkaProducer<OrderCreationKey, OrderCreationValue> producer,
+        [FromKeyedServices("MainProducer")] IKafkaProducer<OrderCreationKey, OrderCreationValue> mainProducer,
+        [FromKeyedServices("OtherProducer")] IKafkaProducer<OrderCreationKey, OrderCreationValue> otherProducer,
         IOptions<KafkaTopicsOptions> topicsOptions,
         TimeProvider timeProvider)
     {
-        _producer = producer;
+        _mainProducer = mainProducer;
+        _otherProducer = otherProducer;
         _topics = topicsOptions.Value;
         _timeProvider = timeProvider;
     }
@@ -43,7 +47,7 @@ public sealed class OrderEventsProducer : IOrderEventsProducer
 
         string topic = _topics.OrderCreationTopic ?? throw new InvalidOperationException("Kafka topic 'OrderCreationTopic' is not configured.");
 
-        return _producer.ProduceAsync(topic, key, value, cancellationToken);
+        return _mainProducer.ProduceAsync(topic, key, value, cancellationToken);
     }
 
     public Task OrderProcessingStartedAsync(Order order, CancellationToken cancellationToken)
@@ -66,6 +70,6 @@ public sealed class OrderEventsProducer : IOrderEventsProducer
 
         string topic = _topics.OrderCreationTopic ?? throw new InvalidOperationException("Kafka topic 'OrderCreationTopic' is not configured.");
 
-        return _producer.ProduceAsync(topic, key, value, cancellationToken);
+        return _otherProducer.ProduceAsync(topic, key, value, cancellationToken);
     }
 }

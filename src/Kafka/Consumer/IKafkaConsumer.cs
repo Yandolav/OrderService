@@ -6,5 +6,5 @@ public interface IKafkaConsumer<TKey, TValue>
 {
     ConsumeResult<TKey, TValue> Consumer(CancellationToken cancellationToken);
 
-    void Commit();
+    void Commit(ConsumeResult<TKey, TValue> result);
 }

@@ -10,21 +10,19 @@ public class KafkaConsumer<TKey, TValue> : IKafkaConsumer<TKey, TValue>, IDispos
 
     public KafkaConsumer(
         IOptions<KafkaTopicsOptions> topicsOptions,
-        IOptions<KafkaOptions> kafkaOptions,
         IOptions<KafkaConsumerOptions> kafkaConsumerOptions,
         IDeserializer<TKey> keyDeserializer,
         IDeserializer<TValue> valueDeserializer)
     {
         KafkaTopicsOptions topicsOptionsValue = topicsOptions.Value;
-        KafkaOptions kafkaOptionsValue = kafkaOptions.Value;
         KafkaConsumerOptions kafkaConsumerOptionsValue = kafkaConsumerOptions.Value;
 
         var config = new ConsumerConfig
         {
-            BootstrapServers = kafkaOptionsValue.BootstrapServers,
+            BootstrapServers = kafkaConsumerOptionsValue.BootstrapServers,
             GroupId = kafkaConsumerOptionsValue.GroupId,
-            GroupInstanceId = kafkaConsumerOptionsValue.FirstInstance,
-            EnableAutoCommit = false,
+            GroupInstanceId = kafkaConsumerOptionsValue.GroupInstanceId,
+            EnableAutoCommit = kafkaConsumerOptionsValue.EnableAutoCommit,
             AutoOffsetReset = AutoOffsetReset.Earliest,
         };
 
@@ -40,9 +38,9 @@ public class KafkaConsumer<TKey, TValue> : IKafkaConsumer<TKey, TValue>, IDispos
         return _consumer.Consume(cancellationToken);
     }
 
-    public void Commit()
+    public void Commit(ConsumeResult<TKey, TValue> result)
     {
-        _consumer.Commit();
+        _consumer.Commit(result);
     }
 
     public void Dispose()

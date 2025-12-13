@@ -1,6 +1,6 @@
 namespace Kafka.Options;
 
-public class KafkaOptions
+public class KafkaProducerOptions
 {
     public string? BootstrapServers { get; set; }
 

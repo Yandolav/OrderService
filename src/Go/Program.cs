@@ -39,7 +39,7 @@ services
     .AddMigrations();
 
 services.AddKafka();
-services.Configure<KafkaOptions>(appConfig.GetSection("Kafka:Connection"));
+services.Configure<KafkaProducerOptions>(appConfig.GetSection("Kafka:Connection"));
 services.Configure<KafkaTopicsOptions>(appConfig.GetSection("Kafka:Topics"));
 services.Configure<KafkaConsumerOptions>(appConfig.GetSection("KafkaConsumer"));
 

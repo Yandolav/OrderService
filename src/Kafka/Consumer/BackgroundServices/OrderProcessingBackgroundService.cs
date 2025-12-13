@@ -1,46 +1,60 @@
 using Confluent.Kafka;
-using Kafka.Consumer.Handlers;
 using Kafka.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Orders.Kafka.Contracts;
+using System.Threading.Channels;
 
 namespace Kafka.Consumer.BackgroundServices;
 
 public class OrderProcessingBackgroundService : BackgroundService
 {
-    private readonly IOptionsMonitor<BackgroundServiceOptions> _options;
+    private readonly IOptionsMonitor<BackgroundServiceOptions> _backgroundOptions;
+    private readonly IOptions<KafkaChannelOptions> _kafkaChannelOptions;
     private readonly IServiceScopeFactory _scopeFactory;
 
     public OrderProcessingBackgroundService(
-        IOptionsMonitor<BackgroundServiceOptions> options,
+        IOptionsMonitor<BackgroundServiceOptions> backgroundOptions,
+        IOptions<KafkaChannelOptions> kafkaChannelOptions,
         IServiceScopeFactory scopeFactory)
     {
-        _options = options;
+        _backgroundOptions = backgroundOptions;
+        _kafkaChannelOptions = kafkaChannelOptions;
         _scopeFactory = scopeFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Task t1 = RunPipelineAsync(KafkaOptionsName.MainConsumer, stoppingToken);
+        Task t2 = RunPipelineAsync(KafkaOptionsName.OtherConsumer, stoppingToken);
+
+        await Task.WhenAll(t1, t2);
+    }
+
+    private async Task RunPipelineAsync(string consumerKey, CancellationToken cancellationToken)
+    {
         using IServiceScope scope = _scopeFactory.CreateScope();
-        IMessageHandler handler = scope.ServiceProvider.GetRequiredService<IMessageHandler>();
-        IKafkaConsumer<OrderProcessingKey, OrderProcessingValue> consumer = scope.ServiceProvider.GetRequiredService<IKafkaConsumer<OrderProcessingKey, OrderProcessingValue>>();
-        var batch = new List<ConsumeResult<OrderProcessingKey, OrderProcessingValue>>(_options.CurrentValue.MaxBatchSize);
 
-        await Task.Yield();
+        IKafkaConsumer<OrderProcessingKey, OrderProcessingValue> consumer = scope.ServiceProvider
+            .GetRequiredKeyedService<IKafkaConsumer<OrderProcessingKey, OrderProcessingValue>>(consumerKey);
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            ConsumeResult<OrderProcessingKey, OrderProcessingValue> message = consumer.Consumer(stoppingToken);
-            batch.Add(message);
+        int batchSize = _backgroundOptions.CurrentValue.MaxBatchSize;
+        var maxWait = TimeSpan.FromMilliseconds(_backgroundOptions.CurrentValue.MaxBatchWaitMilliseconds);
 
-            if (batch.Count >= _options.CurrentValue.MaxBatchSize)
+        var channel = Channel.CreateBounded<ConsumeResult<OrderProcessingKey, OrderProcessingValue>>(
+            new BoundedChannelOptions(batchSize * _kafkaChannelOptions.Value.CapacityMultiplier)
             {
-                await handler.HandleASync(batch, stoppingToken);
-                consumer.Commit();
-                batch.Clear();
-            }
-        }
+                SingleWriter = _kafkaChannelOptions.Value.SingleWriter,
+                SingleReader = _kafkaChannelOptions.Value.SingleReader,
+                FullMode = _kafkaChannelOptions.Value.FullMode,
+            });
+
+        var reader = new OrderProcessingChannelReader(consumer);
+        var handler = new OrderProcessingChannelBatchHandler(_scopeFactory, consumer, batchSize, maxWait);
+
+        await Task.WhenAll(
+            reader.ReadAsync(channel.Writer, cancellationToken),
+            handler.HandleAsync(channel.Reader, cancellationToken));
     }
 }

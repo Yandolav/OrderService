@@ -42,10 +42,13 @@ builder.Services.Configure<GrpcServerOptions>(builder.Configuration.GetSection("
 builder.Services.AddGrpcPresentation();
 
 builder.Services.AddHostedService<OrderProcessingBackgroundService>();
-builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("Kafka:Connection"));
 builder.Services.Configure<KafkaTopicsOptions>(builder.Configuration.GetSection("Kafka:Topics"));
-builder.Services.Configure<KafkaConsumerOptions>(builder.Configuration.GetSection("KafkaConsumer"));
 builder.Services.Configure<BackgroundServiceOptions>(builder.Configuration.GetSection("BackgroundService"));
+builder.Services.Configure<KafkaConsumerOptions>(KafkaOptionsName.MainConsumer, builder.Configuration.GetSection("Kafka:Consumers:MainConsumer"));
+builder.Services.Configure<KafkaConsumerOptions>(KafkaOptionsName.OtherConsumer,  builder.Configuration.GetSection("Kafka:Consumers:OtherConsumer"));
+builder.Services.Configure<KafkaProducerOptions>(KafkaOptionsName.MainProducer, builder.Configuration.GetSection("Kafka:Producers:MainProducer"));
+builder.Services.Configure<KafkaProducerOptions>(KafkaOptionsName.OtherProducer, builder.Configuration.GetSection("Kafka:Producers:OtherProducer"));
+builder.Services.Configure<KafkaChannelOptions>(builder.Configuration.GetSection("KafkaChannel"));
 builder.Services.AddKafka();
 
 builder.WebHost.ConfigureGrpcHost(builder.Configuration);

@@ -11,18 +11,18 @@ public sealed class KafkaProducer<TKey, TValue> : IKafkaProducer<TKey, TValue>, 
     private readonly ILogger<KafkaProducer<TKey, TValue>> _logger;
 
     public KafkaProducer(
-        IOptions<KafkaOptions> kafkaOptions,
+        IOptions<KafkaProducerOptions> kafkaOptions,
         ISerializer<TKey> keySerializer,
         ISerializer<TValue> valueSerializer,
         ILogger<KafkaProducer<TKey, TValue>> logger)
     {
         _logger = logger;
-        KafkaOptions options = kafkaOptions.Value;
+        KafkaProducerOptions producerOptions = kafkaOptions.Value;
 
         var config = new ProducerConfig
         {
-            BootstrapServers = options.BootstrapServers,
-            ClientId = options.ClientId,
+            BootstrapServers = producerOptions.BootstrapServers,
+            ClientId = producerOptions.ClientId,
             Acks = Acks.All,
         };
 
