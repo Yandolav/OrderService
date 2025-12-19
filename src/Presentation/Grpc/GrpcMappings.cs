@@ -1,4 +1,4 @@
-using Core.Domain.Entities;
+using Core.Model.Entities;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Presentation.Grpc;
@@ -14,15 +14,15 @@ internal static class GrpcMappings
             CreatedAt = Timestamp.FromDateTimeOffset(orderHistoryItem.OrderHistoryItemCreatedAt),
             Kind = orderHistoryItem.OrderHistoryItemKind switch
             {
-                Core.Domain.Enums.OrderHistoryItemKind.Created => OrderHistoryItemKind.CreatedItem,
-                Core.Domain.Enums.OrderHistoryItemKind.ItemAdded => OrderHistoryItemKind.ItemAdded,
-                Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
-                Core.Domain.Enums.OrderHistoryItemKind.StateChanged => OrderHistoryItemKind.StateChanged,
-                Core.Domain.Enums.OrderHistoryItemKind.ApprovalReceived => OrderHistoryItemKind.ApprovalReceived,
-                Core.Domain.Enums.OrderHistoryItemKind.PackingStarted => OrderHistoryItemKind.PackingStarted,
-                Core.Domain.Enums.OrderHistoryItemKind.PackingFinished => OrderHistoryItemKind.PackingFinished,
-                Core.Domain.Enums.OrderHistoryItemKind.DeliveryStarted => OrderHistoryItemKind.DeliveryStarted,
-                Core.Domain.Enums.OrderHistoryItemKind.DeliveryFinished => OrderHistoryItemKind.DeliveryFinished,
+                Core.Model.Enums.OrderHistoryItemKind.Created => OrderHistoryItemKind.CreatedItem,
+                Core.Model.Enums.OrderHistoryItemKind.ItemAdded => OrderHistoryItemKind.ItemAdded,
+                Core.Model.Enums.OrderHistoryItemKind.ItemRemoved => OrderHistoryItemKind.ItemRemoved,
+                Core.Model.Enums.OrderHistoryItemKind.StateChanged => OrderHistoryItemKind.StateChanged,
+                Core.Model.Enums.OrderHistoryItemKind.ApprovalReceived => OrderHistoryItemKind.ApprovalReceived,
+                Core.Model.Enums.OrderHistoryItemKind.PackingStarted => OrderHistoryItemKind.PackingStarted,
+                Core.Model.Enums.OrderHistoryItemKind.PackingFinished => OrderHistoryItemKind.PackingFinished,
+                Core.Model.Enums.OrderHistoryItemKind.DeliveryStarted => OrderHistoryItemKind.DeliveryStarted,
+                Core.Model.Enums.OrderHistoryItemKind.DeliveryFinished => OrderHistoryItemKind.DeliveryFinished,
                 _ => OrderHistoryItemKind.Unspecified,
             },
         };
@@ -32,20 +32,20 @@ internal static class GrpcMappings
         return item;
     }
 
-    public static Core.Domain.Enums.OrderHistoryItemKind? ToDomain(this OrderHistoryItemKind kind)
+    public static Core.Model.Enums.OrderHistoryItemKind? ToDomain(this OrderHistoryItemKind kind)
     {
         return kind switch
         {
             OrderHistoryItemKind.Unspecified => null,
-            OrderHistoryItemKind.CreatedItem => Core.Domain.Enums.OrderHistoryItemKind.Created,
-            OrderHistoryItemKind.ItemAdded => Core.Domain.Enums.OrderHistoryItemKind.ItemAdded,
-            OrderHistoryItemKind.ItemRemoved => Core.Domain.Enums.OrderHistoryItemKind.ItemRemoved,
-            OrderHistoryItemKind.StateChanged => Core.Domain.Enums.OrderHistoryItemKind.StateChanged,
-            OrderHistoryItemKind.ApprovalReceived => Core.Domain.Enums.OrderHistoryItemKind.ApprovalReceived,
-            OrderHistoryItemKind.PackingStarted => Core.Domain.Enums.OrderHistoryItemKind.PackingStarted,
-            OrderHistoryItemKind.PackingFinished => Core.Domain.Enums.OrderHistoryItemKind.PackingFinished,
-            OrderHistoryItemKind.DeliveryStarted => Core.Domain.Enums.OrderHistoryItemKind.DeliveryStarted,
-            OrderHistoryItemKind.DeliveryFinished => Core.Domain.Enums.OrderHistoryItemKind.DeliveryFinished,
+            OrderHistoryItemKind.CreatedItem => Core.Model.Enums.OrderHistoryItemKind.Created,
+            OrderHistoryItemKind.ItemAdded => Core.Model.Enums.OrderHistoryItemKind.ItemAdded,
+            OrderHistoryItemKind.ItemRemoved => Core.Model.Enums.OrderHistoryItemKind.ItemRemoved,
+            OrderHistoryItemKind.StateChanged => Core.Model.Enums.OrderHistoryItemKind.StateChanged,
+            OrderHistoryItemKind.ApprovalReceived => Core.Model.Enums.OrderHistoryItemKind.ApprovalReceived,
+            OrderHistoryItemKind.PackingStarted => Core.Model.Enums.OrderHistoryItemKind.PackingStarted,
+            OrderHistoryItemKind.PackingFinished => Core.Model.Enums.OrderHistoryItemKind.PackingFinished,
+            OrderHistoryItemKind.DeliveryStarted => Core.Model.Enums.OrderHistoryItemKind.DeliveryStarted,
+            OrderHistoryItemKind.DeliveryFinished => Core.Model.Enums.OrderHistoryItemKind.DeliveryFinished,
             _ => null,
         };
     }
@@ -54,7 +54,7 @@ internal static class GrpcMappings
     {
         switch (orderHistoryItem.OrderHistoryItemPayload)
         {
-            case Core.Domain.Payloads.ItemAddedPayload itemAddedPayload:
+            case Core.Model.Payloads.ItemAddedPayload itemAddedPayload:
                 item.ItemAdded = new ItemAddedPayload
                 {
                     ProductId = itemAddedPayload.ProductId,
@@ -62,7 +62,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.ItemRemovedPayload itemRemovedPayload:
+            case Core.Model.Payloads.ItemRemovedPayload itemRemovedPayload:
                 item.ItemRemoved = new ItemRemovedPayload
                 {
                     ProductId = itemRemovedPayload.ProductId,
@@ -70,14 +70,14 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.OrderCreatedPayload orderCreatedPayload:
+            case Core.Model.Payloads.OrderCreatedPayload orderCreatedPayload:
                 item.OrderCreated = new OrderCreatedPayload
                 {
                     CreatedBy = orderCreatedPayload.CreatedBy,
                 };
                 break;
 
-            case Core.Domain.Payloads.StateChangedPayload stateChangedPayload:
+            case Core.Model.Payloads.StateChangedPayload stateChangedPayload:
                 item.StateChanged = new StateChangedPayload
                 {
                     OldState = MapState(stateChangedPayload.OldState),
@@ -85,7 +85,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.ApprovalResultPayload approvalResultPayload:
+            case Core.Model.Payloads.ApprovalResultPayload approvalResultPayload:
                 item.ApprovalResult = new ApprovalResultPayload
                 {
                     IsApproved = approvalResultPayload.IsApproved,
@@ -94,7 +94,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.PackingStartedPayload packingStartedPayload:
+            case Core.Model.Payloads.PackingStartedPayload packingStartedPayload:
                 item.PackingStarted = new PackingStartedPayload
                 {
                     PackingBy = packingStartedPayload.PackingBy,
@@ -102,7 +102,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.PackingFinishedPayload packingFinishedPayload:
+            case Core.Model.Payloads.PackingFinishedPayload packingFinishedPayload:
                 item.PackingFinished = new PackingFinishedPayload
                 {
                     FinishedAt = packingFinishedPayload.FinishedAt.ToTimestamp(),
@@ -111,7 +111,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.DeliveryStartedPayload deliveryStartedPayload:
+            case Core.Model.Payloads.DeliveryStartedPayload deliveryStartedPayload:
                 item.DeliveryStarted = new DeliveryStartedPayload
                 {
                     DeliveredBy = deliveryStartedPayload.DeliveredBy,
@@ -119,7 +119,7 @@ internal static class GrpcMappings
                 };
                 break;
 
-            case Core.Domain.Payloads.DeliveryFinishedPayload deliveryFinishedPayload:
+            case Core.Model.Payloads.DeliveryFinishedPayload deliveryFinishedPayload:
                 item.DeliveryFinished = new DeliveryFinishedPayload
                 {
                     FinishedAt = deliveryFinishedPayload.FinishedAt.ToTimestamp(),
@@ -130,14 +130,14 @@ internal static class GrpcMappings
         }
     }
 
-    private static OrderState MapState(Core.Domain.Enums.OrderState state)
+    private static OrderState MapState(Core.Model.Enums.OrderState state)
     {
         return state switch
         {
-            Core.Domain.Enums.OrderState.Created => OrderState.Created,
-            Core.Domain.Enums.OrderState.Processing => OrderState.Processing,
-            Core.Domain.Enums.OrderState.Completed => OrderState.Completed,
-            Core.Domain.Enums.OrderState.Cancelled => OrderState.Cancelled,
+            Core.Model.Enums.OrderState.Created => OrderState.Created,
+            Core.Model.Enums.OrderState.Processing => OrderState.Processing,
+            Core.Model.Enums.OrderState.Completed => OrderState.Completed,
+            Core.Model.Enums.OrderState.Cancelled => OrderState.Cancelled,
             _ => OrderState.Unspecified,
         };
     }

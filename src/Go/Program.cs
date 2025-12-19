@@ -1,6 +1,8 @@
-﻿using Core.Application.Pagination;
-using Core.Application.Ports.PrimaryPorts;
-using Core.Domain.Entities;
+﻿using Core.Contracts.Orders;
+using Core.Contracts.Products;
+using Core.Extensions;
+using Core.Model.Entities;
+using Core.Model.Pagination;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Extensions;
 using Kafka.Extensions;

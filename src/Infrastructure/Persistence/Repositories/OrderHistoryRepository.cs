@@ -1,9 +1,9 @@
-using Core.Application.Filters;
-using Core.Application.Pagination;
-using Core.Application.Ports.SecondaryPorts;
-using Core.Domain.Entities;
-using Core.Domain.Enums;
-using Core.Domain.Payloads;
+using Core.Abstractions.Repositories;
+using Core.Model.Entities;
+using Core.Model.Enums;
+using Core.Model.Filters;
+using Core.Model.Pagination;
+using Core.Model.Payloads;
 using Npgsql;
 using System.Runtime.CompilerServices;
 using System.Text.Json;

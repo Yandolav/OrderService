@@ -1,4 +1,4 @@
-using Core.Application.Errors;
+using Core.Model.Errors;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Microsoft.Extensions.Logging;

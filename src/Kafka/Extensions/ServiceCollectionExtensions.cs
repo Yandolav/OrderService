@@ -1,5 +1,5 @@
 using Confluent.Kafka;
-using Core.Application.Ports.SecondaryPorts;
+using Core.Contracts.Events;
 using Kafka.Consumer;
 using Kafka.Consumer.Handlers;
 using Kafka.Options;

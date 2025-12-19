@@ -1,7 +1,5 @@
-using Core.Application.Ports.PrimaryPorts;
-using Core.Application.Ports.SecondaryPorts;
-using Core.Application.Services;
-using Core.Domain.Enums;
+using Core.Abstractions.Repositories;
+using Core.Model.Enums;
 using FluentMigrator.Runner;
 using Infrastructure.Persistence.Migrations;
 using Infrastructure.Persistence.Repositories;
@@ -19,15 +17,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOrdersRepository, OrdersRepository>();
         services.AddScoped<IOrderItemsRepository, OrderItemsRepository>();
         services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
-        return services;
-    }
-
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
-        services.AddScoped<IProductsService, ProductsService>();
-        services.AddScoped<IOrdersService, OrdersService>();
-        services.AddScoped<IOrderHistoryService, OrderHistoryService>();
-        services.AddSingleton(TimeProvider.System);
         return services;
     }
 

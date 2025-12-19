@@ -1,5 +1,5 @@
-using Core.Application.Ports.SecondaryPorts;
-using Core.Domain.Entities;
+using Core.Contracts.Events;
+using Core.Model.Entities;
 using Google.Protobuf.WellKnownTypes;
 using Kafka.Options;
 using Microsoft.Extensions.DependencyInjection;

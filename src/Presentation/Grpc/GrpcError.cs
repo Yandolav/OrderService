@@ -1,4 +1,4 @@
-using Core.Application.Errors;
+using Core.Model.Errors;
 using Grpc.Core;
 
 namespace Presentation.Grpc;

@@ -1,3 +1,4 @@
+using Core.Extensions;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Extensions;
 using Kafka.Consumer.BackgroundServices;

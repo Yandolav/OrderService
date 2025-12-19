@@ -1,7 +1,8 @@
 using Confluent.Kafka;
-using Core.Application.Ports.PrimaryPorts;
-using Core.Domain.Enums;
-using Core.Domain.Payloads;
+using Core.Contracts.OrderHistory;
+using Core.Contracts.Orders;
+using Core.Model.Enums;
+using Core.Model.Payloads;
 using Orders.Kafka.Contracts;
 
 namespace Kafka.Consumer.Handlers;

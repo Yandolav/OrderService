@@ -1,7 +1,7 @@
-using Core.Application.Filters;
-using Core.Application.Pagination;
-using Core.Application.Ports.SecondaryPorts;
-using Core.Domain.Entities;
+using Core.Abstractions.Repositories;
+using Core.Model.Entities;
+using Core.Model.Filters;
+using Core.Model.Pagination;
 using Npgsql;
 using System.Runtime.CompilerServices;
 
